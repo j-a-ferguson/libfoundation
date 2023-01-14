@@ -1,0 +1,7 @@
+{
+    "task.allowAutomaticTasks": "on",
+    "clangd.path": "clangd",    
+    "clangd.arguments": ["-log=verbose", 
+                         "--background-index",
+                         "--compile-commands-dir=${workspaceFolder}/build/"]
+}
