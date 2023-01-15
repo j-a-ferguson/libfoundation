@@ -1,4 +1,5 @@
 {
+    "editor.defaultFormatter": "llvm-vs-code-extensions.vscode-clangd",
     "task.allowAutomaticTasks": "on",
     "clangd.path": "clangd",    
     "clangd.arguments": ["-log=verbose", 

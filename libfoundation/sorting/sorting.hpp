@@ -4,44 +4,48 @@
 #include <algorithm>
 #include <iterator>
 
-namespace Foundation {
-    namespace Sorting {
-        
-        //{{{ col: type definitions
-        template <typename Iterator>
-        using ValueType = typename std::iterator_traits<Iterator>::value_type;
+namespace Foundation
+{
+namespace Sorting
+{
 
-        template<typename Iterator> 
-        using DiffType = typename std::iterator_traits<Iterator>::difference_type;
-        //}}}
-        
+//{{{ col: type definitions
+template <typename Iterator>
+using ValueType = typename std::iterator_traits<Iterator>::value_type;
 
-        //{{{ fun: insertion sort
-        template <typename BidirIt> 
-        requires std::bidirectional_iterator<BidirIt>
-        void insertionSort(BidirIt start, BidirIt end) {
-                        
-            using Value = ValueType<BidirIt>;
-            
-            for(auto it1 = std::next(start); it1 != end; ++it1) {
-                Value key = *it1;
-                auto it2 = std::prev(it1);
-                while (it2 != start && ((*it2) > key)) {
-                    *it2 = *it1;
-                    --it2;
-                }
-                *(std::next(it2)) = key; 
+template <typename Iterator>
+using DiffType = typename std::iterator_traits<Iterator>::difference_type;
+//}}}
 
-            }
+//{{{ fun: insertion sort
+/**
+ * @brief Sorts a given range using the insertion sort algorithm
+ * 
+ * @tparam BidirIt Bidirectional Iterator type
+ * @param start The beginning of the range
+ * @param end The end of the range
+ */
+template <typename BidirIt>
+    requires std::bidirectional_iterator<BidirIt>
+void insertionSort(BidirIt start, BidirIt end)
+{
+    using Value = ValueType<BidirIt>;
+
+    for (auto it1 = std::next(start); it1 != end; ++it1)
+    {
+        Value key = *it1;
+        auto  it2 = std::prev(it1);
+        while (it2 != start && ((*it2) > key))
+        {
+            *it2 = *it1;
+            --it2;
         }
-        //}}}
-
-        
-
-
-    }
+        *(std::next(it2)) = key;
+    }    
 }
+//}}}
 
+}  // namespace Sorting
+}  // namespace Foundation
 
-
-#endif // SORTING_HPP_
+#endif  // SORTING_HPP_
