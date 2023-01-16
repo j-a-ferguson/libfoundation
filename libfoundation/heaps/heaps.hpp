@@ -1,14 +1,13 @@
 #ifndef HEAPS_HPP_
 #define HEAPS_HPP_
 
-#include <__iterator/concepts.h>
-
 #include <algorithm>
+#include <cstdio>
 #include <iterator>
 
-namespace Foundation
+namespace foundation
 {
-namespace Heaps
+namespace heaps
 {
 
 template <typename Iterator>
@@ -73,9 +72,9 @@ inline DiffType<Iterator> right(DiffType<Iterator> i)
  */
 template <typename BidirIt>
     requires std::bidirectional_iterator<BidirIt>
-void maxHeapify(BidirIt begin, DiffType<BidirIt> heap_size, DiffType<BidirIt> i)
+void heapify(BidirIt begin, DiffType<BidirIt> heap_size, DiffType<BidirIt> i)
 {
-    using Diff  = DiffType<BidirIt>;
+    using Diff = DiffType<BidirIt>;
 
     auto i_iter = std::next(begin, i);
 
@@ -83,17 +82,16 @@ void maxHeapify(BidirIt begin, DiffType<BidirIt> heap_size, DiffType<BidirIt> i)
     {
         Diff l            = left<BidirIt>(i);
         Diff r            = right<BidirIt>(i);
-
         auto l_iter       = std::next(i_iter, l - i);
         auto r_iter       = std::next(l_iter, 1);
         auto largest_iter = i_iter;
 
-        if ((l < heap_size) && (*l_iter > *largest_iter))
+        if ((l < heap_size) && (*largest_iter < *l_iter))
         {
             largest_iter = l_iter;
         }
 
-        if ((r < heap_size) && (*r_iter > *largest_iter))
+        if ((r < heap_size) && (*largest_iter < *r_iter))
         {
             largest_iter = r_iter;
         }
@@ -114,9 +112,92 @@ void maxHeapify(BidirIt begin, DiffType<BidirIt> heap_size, DiffType<BidirIt> i)
 }  // namespace internal
 
 template <typename BidirIt>
+    requires std::bidirectional_iterator<BidirIt> bool
+isHeap(BidirIt first, BidirIt last)
+{
+    using Diff = DiffType<BidirIt>;
+    Diff heap_size{std::distance(first, last)};
+    Diff heap_size_half{internal::parent<BidirIt>(heap_size)};
+    bool is_heap{true};
+
+    // if heap_size is odd all non-leaf nodes have 2 children
+    bool all_two_children{(heap_size % 2) == 1};
+    Diff lim = all_two_children ? heap_size_half : heap_size_half - 1;
+
+    /* First, we shall look at all the non-leaf nodes which are guaranteed to
+       have two children */
+    auto i_iter = first;
+    for (Diff i = 0; i < lim; ++i)
+    {        
+        Diff l      = internal::left<BidirIt>(i);
+        auto l_iter = std::next(i_iter, l - i);
+
+        if (*i_iter < *l_iter)
+        {            
+            is_heap = false;
+            break;
+        }
+
+        Diff r      = internal::right<BidirIt>(i);
+        auto r_iter = std::next(l_iter, 1);        
+
+        if (*i_iter < *r_iter)
+        {            
+            is_heap = false;
+            break;
+        }
+
+        std::advance(i_iter, 1);
+    }
+
+    /* Second we look at the non-leaf node which may have only one child 
+     */
+    if (!all_two_children)
+    {
+        Diff i      = heap_size_half-1;
+        Diff l      = internal::left<BidirIt>(i);
+        auto l_iter = std::next(i_iter, l - i);
+
+        if (*i_iter < *l_iter)
+        {            
+            is_heap = false;
+        }
+
+        Diff r = internal::right<BidirIt>(i);
+        if (r < heap_size)
+        {
+            auto r_iter = std::next(l_iter, 1);
+            if (*i_iter < *r_iter)
+            {                
+                is_heap = false;
+            }
+        }
+    }
+    return is_heap;
+}
+
+/**
+ * @brief Makes the range of values in range ``[start, end)`` a max-heap
+ *
+ * @tparam BidirIt Iteraotr of type LegacyBidirectionalIterator
+ * @param begin Start of range
+ * @param end On-past-end of range
+ */
+template <typename BidirIt>
     requires std::bidirectional_iterator<BidirIt>
-void buidMaxHeap(BidirIt begin, BidirIt end)
-}  // namespace Heaps
-}  // namespace Foundation
+void makeHeap(BidirIt begin, BidirIt end)
+{
+    using Diff     = DiffType<BidirIt>;
+    Diff heap_size = std::distance(begin, end);
+
+    Diff start{internal::parent<BidirIt>(heap_size)};
+
+    for (Diff i = start; i >= 0; --i)
+    {
+        internal::heapify(begin, heap_size, i);
+    }
+}
+}  // namespace heaps
+}  // namespace foundation
 
 #endif  // HEAPS_HPP_

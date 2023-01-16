@@ -4,9 +4,9 @@
 #include <algorithm>
 #include <iterator>
 
-namespace Foundation
+namespace foundation
 {
-namespace Sorting
+namespace sorting
 {
 
 //{{{ col: type definitions
@@ -45,7 +45,7 @@ void insertionSort(BidirIt start, BidirIt end)
 }
 //}}}
 
-}  // namespace Sorting
-}  // namespace Foundation
+}  // namespace sorting
+}  // namespace foundation
 
 #endif  // SORTING_HPP_

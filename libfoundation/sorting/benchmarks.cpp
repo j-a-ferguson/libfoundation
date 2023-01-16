@@ -9,7 +9,7 @@ static void BM_insertionSortBest(benchmark::State& state) {
     std::iota(data.begin(), data.end(), 0);    
 
     for(auto _ : state) {
-        Foundation::Sorting::insertionSort(data.begin(), data.end());
+        foundation::sorting::insertionSort(data.begin(), data.end());
     }
     state.SetComplexityN(state.range(0));
 }
@@ -21,7 +21,7 @@ static void BM_insertionSortAverage(benchmark::State& state) {
     std::generate(data.begin(), data.end(), std::rand);    
 
     for(auto _ : state) {
-        Foundation::Sorting::insertionSort(data.begin(), data.end());
+        foundation::sorting::insertionSort(data.begin(), data.end());
     }
     state.SetComplexityN(state.range(0));
 }
@@ -34,7 +34,7 @@ static void BM_insertionSortWorst(benchmark::State& state) {
     std::reverse(data.begin(), data.end());
 
     for(auto _ : state) {
-        Foundation::Sorting::insertionSort(data.begin(), data.end());
+        foundation::sorting::insertionSort(data.begin(), data.end());
     }
     state.SetComplexityN(state.range(0));
 }

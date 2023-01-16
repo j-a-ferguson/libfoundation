@@ -13,6 +13,6 @@ TEST(sorting, insertionSort) {
   std::vector<int> integers(100);
   std::generate(integers.begin(), integers.end(), std::rand);
 
-  Foundation::Sorting::insertionSort(integers.begin(), integers.end());
+  foundation::sorting::insertionSort(integers.begin(), integers.end());
   ASSERT_TRUE(std::is_sorted(integers.begin(), integers.end()));
 }
