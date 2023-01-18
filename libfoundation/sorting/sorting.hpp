@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <libfoundation/heaps/heaps.hpp>
 
 namespace foundation
 {
@@ -20,7 +21,7 @@ using DiffType = typename std::iterator_traits<Iterator>::difference_type;
 //{{{ fun: insertion sort
 /**
  * @brief Sorts a given range using the insertion sort algorithm
- * 
+ *
  * @tparam BidirIt Bidirectional Iterator type
  * @param start The beginning of the range
  * @param end The end of the range
@@ -41,8 +42,27 @@ void insertionSort(BidirIt start, BidirIt end)
             --it2;
         }
         *(std::next(it2)) = key;
-    }    
+    }
 }
+//}}}
+///{{{ fun: heap sort
+template <typename BidirIt>
+    requires std::bidirectional_iterator<BidirIt>
+void heapSort(BidirIt first, BidirIt last)
+{
+    using Value = ValueType<BidirIt>;
+    using Diff = DiffType<BidirIt>;
+
+    heaps::makeHeap(first, last);
+    Diff heap_size{std::distance(first, last)};
+
+    for(auto ) 
+    {
+        std::
+    }
+    
+}
+
 //}}}
 
 }  // namespace sorting

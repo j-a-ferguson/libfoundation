@@ -4,5 +4,21 @@
     "clangd.path": "clangd",    
     "clangd.arguments": ["-log=verbose", 
                          "--background-index",
-                         "--compile-commands-dir=${workspaceFolder}/build/"]
+                         "--compile-commands-dir=${workspaceFolder}/build/"],
+    "editor.foldingStrategy": "auto",
+    "editor.foldingHighlight": false,
+    "editor.unfoldOnClickAfterEndOfLine": false,
+    "editor.defaultFoldingRangeProvider": "zokugun.explicit-folding",    
+    "explicitFolding.rules": {
+        "cpp" : [
+            {
+                "begin": "{{{",
+                "end": "}}}"
+            },
+            {
+                "begin": "/*", 
+                "end": "*/"
+            }
+        ]
+    },
 }

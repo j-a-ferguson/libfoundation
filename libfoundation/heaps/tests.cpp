@@ -150,6 +150,21 @@ TEST(heaps, makeHeap1)
         ++i;
     }
 }
+
+TEST(heaps, makeHeap2) 
+{
+    std::list<int> data1 = {8, 10, 11, 2, 3, 15, 16, 1, 20};
+    foundation::heaps::makeHeap(data1.begin(), data1.end());
+
+    std::vector<int> data2 = {20, 10, 16, 8, 3, 15, 11, 1, 2};
+
+    int i{0};
+    for(auto val : data1)
+    {
+        ASSERT_EQ(val, data2[i]);
+        ++i;
+    }
+}
     
 
 } // namespace heaps
