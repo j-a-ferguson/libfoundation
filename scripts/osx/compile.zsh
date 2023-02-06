@@ -1,5 +1,9 @@
 #!/bin/zsh
 
+# setup modules for the zshell
+source $HOME/apps/modules/5.0.1/init/zsh
+module load llvm
+
 cwd=$(pwd)
 build_dir="$(pwd)/build/"
 
