@@ -3,7 +3,9 @@
 
 #include <algorithm>
 #include <iterator>
+#include <stack>
 #include <libfoundation/heaps/heaps.hpp>
+#include <utility>
 
 namespace foundation
 {
@@ -51,20 +53,103 @@ template <typename BidirIt>
 void heapSort(BidirIt first, BidirIt last)
 {
     using Value = ValueType<BidirIt>;
-    using Diff = DiffType<BidirIt>;
+    using Diff  = DiffType<BidirIt>;
 
+    /* doc
+    After this call, all nodes are max-heaps, largest value in the
+    array is located at first.
+    */
     heaps::makeHeap(first, last);
-    Diff heap_size{std::distance(first, last)};
+    /* doc
+    Initially the heap size and the length coincide
+    */
+    Diff    len{std::distance(first, last)};
+    Diff    heap_size{len};
+    BidirIt top = std::prev(last);
 
-    for(auto ) 
+    for (Diff i = 0; i < len - 1; ++i)
     {
-        std::
+        /* doc
+        Swap the maximum value with the end value, this now means the
+        first element is no longer a max-heap and neither is the parent of
+        the last element. To fix this, first the heap size is reduced to that
+        the last element is not longer in the heap and second the first element
+        is heapified
+        */
+        std::iter_swap(first, top);
+        --heap_size;
+        heaps::internal::heapify(first, heap_size, 0);
+        std::advance(top, -1);
     }
-    
 }
 
 //}}}
 
+//{{{{ fun: quicksort
+namespace internal
+{
+
+template <typename BidirIt>
+    requires std::bidirectional_iterator<BidirIt>
+BidirIt partition(BidirIt start, BidirIt end)
+{
+    using Value = ValueType<BidirIt>;
+    using Diff  = DiffType<BidirIt>;
+    Diff l      = std::distance(start, end);
+    auto i_iter{std::prev(start)};
+
+    if (l > 0)
+    {
+        Value pivot{*std::prev(end)};
+        Diff  i{-1};
+        auto  j_iter{start};
+
+        for (Diff j = 0; j < l - 1; ++j)
+        {
+            auto xj{*j_iter};
+
+            if (xj <= pivot)
+            {
+                ++i;
+                std::advance(i_iter, 1);
+                std::iter_swap(i_iter, j_iter);
+            }
+            std::advance(j_iter, 1);
+        }
+        std::iter_swap(std::next(i_iter), std::prev(end));
+        std::advance(i_iter, 1);
+    }
+    return i_iter;
+}
+
+}  // namespace internal
+template <typename BidirIt>
+    requires std::bidirectional_iterator<BidirIt>
+void quickSort(BidirIt start, BidirIt end)
+{
+    using Value = ValueType<BidirIt>;
+    using Diff  = DiffType<BidirIt>;
+    using Range = std::pair<BidirIt, BidirIt>; 
+
+    std::stack<Range> ranges;
+    ranges.push({start, end});
+
+    while(!ranges.empty())
+    {
+        Range current_range = ranges.top();
+        ranges.pop();
+
+        auto current_start = current_range.first;
+        auto current_end = current_range.second;
+        auto pivot = internal::partition(current_start, current_end);
+
+        ranges.push({current_start, std::prev(pivot)});
+        ranges.push({std::next(pivot), current_end});
+    }
+}
+
+
+//}}}}
 }  // namespace sorting
 }  // namespace foundation
 

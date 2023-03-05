@@ -8,7 +8,7 @@
             "type": "lldb",
             "request": "launch",
             "name": "Debug Tests",
-            "program": "${workspaceFolder}/build/",
+            "program": "${workspaceFolder}/build/debug/libfoundation/foundation-tests",
             "args": [],
             "cwd": "${workspaceFolder}"
         }

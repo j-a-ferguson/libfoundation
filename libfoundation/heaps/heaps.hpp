@@ -67,7 +67,7 @@ inline DiffType<Iterator> right(DiffType<Iterator> i)
  * @tparam BidirIt Iterator of type LegacyBidirectionalIterator
  * @param begin Start of range
  * @param heap_size Size of sequence, so ``std::distance(begin, end)``
- * @param i Index at which t
+ * @param i Index  
  * @return requires
  */
 template <typename BidirIt>
@@ -112,8 +112,8 @@ void heapify(BidirIt begin, DiffType<BidirIt> heap_size, DiffType<BidirIt> i)
 }  // namespace internal
 
 template <typename BidirIt>
-    requires std::bidirectional_iterator<BidirIt> bool
-isHeap(BidirIt first, BidirIt last)
+    requires std::bidirectional_iterator<BidirIt> 
+bool isHeap(BidirIt first, BidirIt last)
 {
     using Diff = DiffType<BidirIt>;
     Diff heap_size{std::distance(first, last)};
@@ -128,21 +128,21 @@ isHeap(BidirIt first, BidirIt last)
        have two children */
     auto i_iter = first;
     for (Diff i = 0; i < lim; ++i)
-    {        
+    {
         Diff l      = internal::left<BidirIt>(i);
         auto l_iter = std::next(i_iter, l - i);
 
         if (*i_iter < *l_iter)
-        {            
+        {
             is_heap = false;
             break;
         }
 
         Diff r      = internal::right<BidirIt>(i);
-        auto r_iter = std::next(l_iter, 1);        
+        auto r_iter = std::next(l_iter, 1);
 
         if (*i_iter < *r_iter)
-        {            
+        {
             is_heap = false;
             break;
         }
@@ -150,16 +150,16 @@ isHeap(BidirIt first, BidirIt last)
         std::advance(i_iter, 1);
     }
 
-    /* Second we look at the non-leaf node which may have only one child 
+    /* Second we look at the non-leaf node which may have only one child
      */
     if (!all_two_children)
     {
-        Diff i      = heap_size_half-1;
+        Diff i      = heap_size_half - 1;
         Diff l      = internal::left<BidirIt>(i);
         auto l_iter = std::next(i_iter, l - i);
 
         if (*i_iter < *l_iter)
-        {            
+        {
             is_heap = false;
         }
 
@@ -168,7 +168,7 @@ isHeap(BidirIt first, BidirIt last)
         {
             auto r_iter = std::next(l_iter, 1);
             if (*i_iter < *r_iter)
-            {                
+            {
                 is_heap = false;
             }
         }
