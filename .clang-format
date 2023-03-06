@@ -103,10 +103,15 @@ IfMacros:
   - KJ_IF_MAYBE
 IncludeBlocks:   Regroup
 IncludeCategories:  
-  - Regex:           '.*'
-    Priority:        1
-    SortPriority:    0
-    CaseSensitive:   false
+# Project headers first
+  - Regex:            '<libfoundation/.*\\.hpp>'
+    Priority:        100
+# Standard headers second
+  - Regex:           '<[a-z_]+>'
+    Priority:        120
+# All other headers
+  - Regex: '<(gtest|fmt|benchmark)/.*\\.(h|hxx|hpp)>'
+    Priority:       130
 IncludeIsMainRegex: '([-_](test|unittest))?$'
 IncludeIsMainSourceRegex: ''
 IndentAccessModifiers: false

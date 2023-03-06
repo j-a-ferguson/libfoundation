@@ -1,10 +1,11 @@
 #ifndef SORTING_HPP_
 #define SORTING_HPP_
 
+#include <libfoundation/heaps/heaps.hpp>
+
 #include <algorithm>
 #include <iterator>
 #include <stack>
-#include <libfoundation/heaps/heaps.hpp>
 #include <utility>
 
 namespace foundation
@@ -129,25 +130,32 @@ void quickSort(BidirIt start, BidirIt end)
 {
     using Value = ValueType<BidirIt>;
     using Diff  = DiffType<BidirIt>;
-    using Range = std::pair<BidirIt, BidirIt>; 
+    using Range = std::pair<BidirIt, BidirIt>;
 
     std::stack<Range> ranges;
     ranges.push({start, end});
 
-    while(!ranges.empty())
+    while (!ranges.empty())
     {
         Range current_range = ranges.top();
         ranges.pop();
 
         auto current_start = current_range.first;
-        auto current_end = current_range.second;
-        auto pivot = internal::partition(current_start, current_end);
+        auto current_end   = current_range.second;
+        auto pivot         = internal::partition(current_start, current_end);
 
-        ranges.push({current_start, std::prev(pivot)});
-        ranges.push({std::next(pivot), current_end});
+        if (std::distance(current_start, pivot) > 1)
+        {
+            ranges.push({current_start, pivot});
+        }
+
+        auto tmp = std::next(pivot);
+        if (std::distance(tmp, current_end) > 1)
+        {
+            ranges.push({tmp, current_end});
+        }
     }
 }
-
 
 //}}}}
 }  // namespace sorting

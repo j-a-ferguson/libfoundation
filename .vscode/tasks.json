@@ -31,7 +31,7 @@
                 "kind": "build", 
             },
             "osx": {
-                "command": "zsh ${workspaceFolder}/scripts/osx/run-tests.zsh"
+                "command": "zsh ${workspaceFolder}/scripts/osx/clean.zsh"
             }
         }
     ]

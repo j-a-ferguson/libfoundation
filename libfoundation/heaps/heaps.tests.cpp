@@ -1,15 +1,14 @@
-#include <fmt/core.h>
-#include <gtest/gtest.h>
-
 #include <algorithm>
-
 #include <cmath>
 #include <cstdlib>
-#include <libfoundation/heaps/heaps.hpp>
 #include <list>
 #include <numeric>
 
-namespace foundation 
+#include <fmt/core.h>
+#include <gtest/gtest.h>
+#include <libfoundation/heaps/heaps.hpp>
+
+namespace foundation
 {
 namespace heaps
 {
@@ -85,87 +84,82 @@ TEST(heaps, heapify)
 }
 
 /**
- * @brief Verifies that ``isHeap()`` returns true for a sequence in 
+ * @brief Verifies that ``isHeap()`` returns true for a sequence in
  *        in descending order.
  */
-TEST(heaps, isHeap1) 
+TEST(heaps, isHeap1)
 {
     std::list<int> data(10);
     std::iota(data.begin(), data.end(), 0);
     std::reverse(data.begin(), data.end());
     bool is_heap = foundation::heaps::isHeap(data.begin(), data.end());
-    ASSERT_TRUE(is_heap);    
-
+    ASSERT_TRUE(is_heap);
 }
 
 /**
- * @brief Verifies that ``isHeap()`` returns false for a sequence 
+ * @brief Verifies that ``isHeap()`` returns false for a sequence
  *        where a node which violates the heap property has only one child
  */
 TEST(heaps, isHeap2)
-{    
+{
     std::list<int> data(10);
     std::iota(data.begin(), data.end(), 0);
     std::reverse(data.begin(), data.end());
-    std::iter_swap(std::next(data.begin(), 4), 
-                    std::next(data.begin(), 9));
-    bool is_heap = foundation::heaps::isHeap(data.begin(), data.end());        
+    std::iter_swap(std::next(data.begin(), 4), std::next(data.begin(), 9));
+    bool is_heap = foundation::heaps::isHeap(data.begin(), data.end());
     ASSERT_FALSE(is_heap);
 }
 
 /**
- * @brief Verifies that ``isHeap()`` returns false for a sequence 
- *        where a node which violates the heap property has only 
-*         two children.
+ * @brief Verifies that ``isHeap()`` returns false for a sequence
+ *        where a node which violates the heap property has only
+ *         two children.
  */
 TEST(heaps, isHeap3)
-{    
+{
     {
         std::list<int> data(10);
         std::iota(data.begin(), data.end(), 0);
         std::reverse(data.begin(), data.end());
-        std::iter_swap(std::next(data.begin(), 1), 
-                        std::next(data.begin(), 3));
-        bool is_heap = foundation::heaps::isHeap(data.begin(), data.end());        
+        std::iter_swap(std::next(data.begin(), 1), std::next(data.begin(), 3));
+        bool is_heap = foundation::heaps::isHeap(data.begin(), data.end());
         ASSERT_FALSE(is_heap);
     }
-    
 }
 
 /**
  * @brief Verify that the sorted array remains unchanged
- * 
+ *
  */
-TEST(heaps, makeHeap1) 
-{    
+TEST(heaps, makeHeap1)
+{
     std::list<int> data(10);
-    std::iota(data.begin(), data.end(), -5); 
-    std::reverse(data.begin(), data.end());         
+    std::iota(data.begin(), data.end(), -5);
+    std::reverse(data.begin(), data.end());
     foundation::heaps::makeHeap(data.begin(), data.end());
 
     int i{0};
-    for(int val : data)
+    for (int val : data)
     {
         ASSERT_EQ(val, 4 - i);
         ++i;
     }
 }
 
-TEST(heaps, makeHeap2) 
+TEST(heaps, makeHeap2)
 {
     std::list<int> data1 = {8, 10, 11, 2, 3, 15, 16, 1, 20};
     foundation::heaps::makeHeap(data1.begin(), data1.end());
 
     std::vector<int> data2 = {20, 10, 16, 8, 3, 15, 11, 1, 2};
 
-    int i{0};
-    for(auto val : data1)
+    int              i{0};
+    for (auto val : data1)
     {
         ASSERT_EQ(val, data2[i]);
         ++i;
     }
 }
-    
 
-} // namespace heaps
-} // namespace foundation
+}  // namespace heaps
+}  // namespace foundation
