@@ -3,12 +3,15 @@
 //  Distributed under CC0 1.0 Universal licence
 // ------------------------------------------------------
 
+#include <cassert>
 #include <cstddef>
 #include <memory>
 #include <utility>
 #include <iterator>
 #include <cmath>
 #include <string>
+
+#include <fmt/core.h>
 
 #include <libfoundation/core/io.hpp>
 
@@ -17,29 +20,6 @@ namespace foundation
 {
 namespace rbtree
 {
-    // {{{ collection: utilities
-    namespace internal
-    {  
-        inline bool isNull(void* ptr)
-        {
-            return (ptr == nullptr);
-        }
-        inline bool notNull(void* ptr)
-        {
-            return (ptr != nullptr);
-        } 
-        template <class T> 
-        inline bool isNull(const std::shared_ptr<T>& ptr)
-        {
-            return (ptr == nullptr);
-        }
-        template <class T>
-        inline bool notNull(const std::shared_ptr<T>& ptr)
-        {
-            return (ptr != nullptr);
-        }
-    }
-    // }}}
     // {{{ collection: forward declarations
     template <class T>
     class Node;
@@ -68,8 +48,6 @@ namespace rbtree
 
     template <class T> 
     class Tree;
-
-
     // }}}
     // {{{ collection Node
     // {{{ class Node
@@ -91,12 +69,10 @@ namespace rbtree
     {
         private:
         // {{{ collection: private fields
-        /** Pointer to the tree which owns this node */
-        Tree<T>* owner_;
         /** Value this node stores*/
         T value_{};
         /** Pointer to the parent */
-        NodeRptr<T> parent_;
+        NodeSptr<T> parent_;
         /** Pointer to the left child */
         NodeSptr<T> left_;
         /** Pointer to thr right child */
@@ -109,9 +85,8 @@ namespace rbtree
 
         // {{{ collection: creation/destruction
         Node() = default;
-        Node(Tree<T>* owner, const T& value, long int uid)
+        Node(const T& value, long int uid)
         {
-            owner_ = owner;
             value_ = value;
             uid_ = uid;
         }
@@ -124,11 +99,11 @@ namespace rbtree
             return value_;
         }
 
-        NodeRptr<T>& parent() {
+        NodeSptr<T>& parent() {
             return parent_;
         }
 
-        NodeRptr<T> parent() const {
+        const NodeSptr<T>& parent() const {
             return parent_;
         }
 
@@ -159,7 +134,7 @@ namespace rbtree
 
         bool isLeft() {
             bool is_left{false};
-            if(internal::notNull(parent_))
+            if(parent_)
             {
                 is_left = parent_->left_.get() == this;
             }
@@ -168,7 +143,7 @@ namespace rbtree
 
         bool isRight() {
             bool is_right{false};
-            if(internal::notNull(parent_)) 
+            if(parent_) 
             {
                 is_right = parent_->right_.get() == this;
             }
@@ -176,71 +151,8 @@ namespace rbtree
         }
 
         bool isLeaf() {
-            bool is_leaf{left_ == nullptr && right_ == nullptr};
+            bool is_leaf{(!left_) && (!right_)};
             return is_leaf;
-        }
-        // }}}
-        // {{{ collection: alteration
-        void setLeft(NodeSptr<T> node)
-        {
-            if(internal::notNull(node))
-            {
-                left_ = std::move(node);
-                left_->parent_ = this;
-            }
-        }
-
-        void setRight(NodeSptr<T> node)
-        {
-            if(internal::notNull(node))
-            {
-                right_ = std::move(node);
-                right_->parent_ = this;
-            }
-        }
-
-        /**
-        @brief Performs the left rotation operation to the 
-        
-        @return NodeSptr<T> 
-         */
-        NodeSptr<T>  leftRotate()
-        {
-            NodeSptr<T> y{nullptr};
-            if(internal::notNull(left_))
-            {
-                // x is the this pointer
-                // create local variable to hold left child called y
-                y = left_;
-                // set the right subtree of x to be the left subtree of y
-                right_ = y->left_;
-                // if left child of y in not null then set its parent to x
-                if(internal::notNull(y->left_))
-                {
-                    y->left_->parent_ = this;
-                }
-                // set the parent of y to the parent of x
-                y->parent_ = this->parent_;
-                // if x is the root node then set y to the root node
-                if(internal::isNull(parent_))
-                {
-                    owner_->root_ = y;
-                }
-                else
-                {
-                    if(isLeft())
-                    {
-                        parent_->left_ = y;
-                    }
-                    else
-                    {
-                        parent_->right_ = y;
-                    }
-                }
-                y->left_.reset(this);
-                parent_ = y.get();                
-            }
-            return y;
         }
         // }}}
         // {{{ collection: io
@@ -259,16 +171,145 @@ namespace rbtree
         json["value"] = node.value();
         json["uid"] = node.uid();
 
-        if(internal::notNull(node.parent()))
+        if(node.parent())
             json["parent"] = node.parent()->uid();
 
-        if(internal::notNull(node.left()))
+        if(node.left())
             json["left"] = node.left()->uid();
             
-        if(internal::notNull(node.right()))
+        if(node.right())
             json["right"] = node.right()->uid();
 
     }
+    // }}}
+    // {{{ collection: node alteration 
+    // {{{ function: setLeft
+    /**
+    @brief Sets the left child of a given node.
+    
+    @tparam T Underlying type stored in node
+    @param node Node who's left child will be edited
+    @param new_left Node to be assigned as left child.
+
+    Notes on 
+     */
+    template <class T>
+    void setLeft(NodeSptr<T>& root, NodeSptr<T>& new_left)
+    {        
+        if(root)
+        {
+            if(new_left)
+            {
+                /* doc
+                If the new left substree root is not null then 
+                the old left subtree must be unlinked by severing its' 
+                parent pointer
+                */
+                if(root->left())
+                {
+                    // unlink the left subtree 
+                    root->left()->parent().reset();
+                }
+                // link new left subtree
+                root->left() = new_left;
+                root->left()->parent() = root;
+            }
+            else 
+            {
+                /* doc
+                If new_left is nullptr then this function simply 
+                severs the left subtree.
+                */
+                if(root->left())
+                {
+                    // unlink the left subtree
+                    root->left()->parent().reset();
+                    // set the left substree to nullptre
+                    root->left().reset();
+                }
+            }
+        }
+    }
+    // }}}
+    // {{{ function setRight
+    template <class T> 
+    void setRight(NodeSptr<T>& root, NodeSptr<T>& new_right)
+    {
+        assert(root);        
+        if(new_right)
+        {
+            /* doc
+            If the new right substree root is not null then 
+            the old left subtree must be unlinked by severing its' 
+            parent pointer
+            */
+            if(root->right())
+            {
+                // unlink the left subtree 
+                root->right()->parent().reset();
+            }
+            // link new left subtree
+            root->right() = new_right;
+            root->right()->parent() = root;
+        }
+        else 
+        {
+            /* doc
+            If new_left is nullptr then this function simply 
+            severs the left subtree.
+            */
+            if(root->right())
+            {
+                // unlink the left subtree
+                root->right()->parent().reset();
+                // set the left substree to nullptre
+                root->right().reset();
+            }
+        }
+    }
+    // }}}
+    // {{{ function: leftRotate
+    // template <class T>
+    // NodeSptr<T>  leftRotate(NodeSptr<T> x)
+    // {
+    //     NodeSptr<T> y{nullptr};
+    //     if(internal::notNull(x->left()))
+    //     {
+    //         // x is the this pointer
+    //         // create local variable to hold left child called y
+    //         y = x->left();
+    //         // set the right subtree of x to be the left subtree of y
+    //         x->right() = y->left();
+    //         // if left child of y in not null then set its parent to x
+    //         if(internal::notNull(y->left()))
+    //         {
+    //             y->left()->parent() = this;
+    //         }
+    //         // set the parent of y to the parent of x
+    //         y->parent_ = parent_;
+    //         // if x is the root node then set y to the root node
+    //         if(internal::isNull(parent_))
+    //         {
+    //             owner_->root_ = y;
+    //         }
+    //         else
+    //         {
+    //             if(isLeft())
+    //             {
+    //                 parent_->left_ = y;
+    //             }
+    //             else
+    //             {
+    //                 parent_->right_ = y;
+    //             }
+    //         }
+    //         y->left_.reset(this);
+    //         parent_ = y.get();                
+    //     }
+    //     fmt::print("{} . {}\n", y->stringify(), y.use_count());
+    //     return y;
+    // }
+    // }}}
     // }}}
     // }}}
     // {{{ class RBTree

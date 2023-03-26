@@ -19,13 +19,22 @@ namespace sorting
 {
 
 //{{{ col: type definitions
+/**
+@brief The valut type of the given iterator
+
+@tparam Iterator An iterator type
+ */
 template <typename Iterator>
 using ValueType = typename std::iterator_traits<Iterator>::value_type;
 
+/**
+@brief The difference type for a given iterator
+
+@tparam Iterator An iterator type
+ */
 template <typename Iterator>
 using DiffType = typename std::iterator_traits<Iterator>::difference_type;
 //}}}
-
 //{{{ fun: insertion sort
 /**
  * @brief Sorts a given range using the insertion sort algorithm
@@ -53,7 +62,7 @@ void insertionSort(BidirIt start, BidirIt end)
     }
 }
 //}}}
-///{{{ fun: heap sort
+//{{{ fun: heap sort
 template <typename BidirIt>
     requires std::bidirectional_iterator<BidirIt>
 void heapSort(BidirIt first, BidirIt last)
@@ -90,8 +99,7 @@ void heapSort(BidirIt first, BidirIt last)
 }
 
 //}}}
-
-//{{{{ fun: quicksort
+//{{{ fun: quicksort
 namespace internal
 {
 
@@ -162,7 +170,7 @@ void quickSort(BidirIt start, BidirIt end)
     }
 }
 
-//}}}}
+//}}}
 }  // namespace sorting
 }  // namespace foundation
 

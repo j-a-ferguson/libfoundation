@@ -9,6 +9,8 @@
 
 #include <benchmark/benchmark.h>
 
+
+// {{{ collection: insertion sort benchmarks
 static void BM_insertionSortBest(benchmark::State& state)
 {
     std::vector<int> data(state.range());
@@ -57,3 +59,6 @@ BENCHMARK(BM_insertionSortWorst)
     ->RangeMultiplier(2)
     ->Range(1 << 5, 1 << 15)
     ->Complexity(benchmark::oN);
+// }}}
+// {{{ collection
+// }}}
