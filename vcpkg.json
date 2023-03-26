@@ -2,6 +2,6 @@
     "name": "libfoundation", 
     "version-string": "0.0.0", 
     "dependencies": [
-        "gtest", "fmt", "benchmark"
+        "gtest", "fmt", "benchmark", "nlohmann-json"
     ]
 }

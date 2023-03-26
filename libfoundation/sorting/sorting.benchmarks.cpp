@@ -1,3 +1,8 @@
+// ------------------------------------------------------
+//  John Alexander Ferguson, 2023
+//  Distributed under CC0 1.0 Universal licence
+// ------------------------------------------------------
+
 #include "libfoundation/sorting/sorting.hpp"
 
 #include <numeric>
@@ -17,7 +22,7 @@ static void BM_insertionSortBest(benchmark::State& state)
 }
 BENCHMARK(BM_insertionSortBest)
     ->RangeMultiplier(2)
-    ->Range(1 << 5, 1 << 18)
+    ->Range(1 << 5, 1 << 15)
     ->Complexity(benchmark::oN);
 
 static void BM_insertionSortAverage(benchmark::State& state)
@@ -33,7 +38,7 @@ static void BM_insertionSortAverage(benchmark::State& state)
 }
 BENCHMARK(BM_insertionSortAverage)
     ->RangeMultiplier(2)
-    ->Range(1 << 5, 1 << 18)
+    ->Range(1 << 5, 1 << 15)
     ->Complexity(benchmark::oN);
 
 static void BM_insertionSortWorst(benchmark::State& state)
@@ -50,5 +55,5 @@ static void BM_insertionSortWorst(benchmark::State& state)
 }
 BENCHMARK(BM_insertionSortWorst)
     ->RangeMultiplier(2)
-    ->Range(1 << 5, 1 << 18)
+    ->Range(1 << 5, 1 << 15)
     ->Complexity(benchmark::oN);

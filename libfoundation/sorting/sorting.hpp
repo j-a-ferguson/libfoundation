@@ -1,3 +1,8 @@
+// ------------------------------------------------------
+//  John Alexander Ferguson, 2023
+//  Distributed under CC0 1.0 Universal licence
+// ------------------------------------------------------
+
 #ifndef SORTING_HPP_
 #define SORTING_HPP_
 
