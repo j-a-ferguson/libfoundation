@@ -22,10 +22,59 @@ NodeSptr<T> createNodeSptr(const T& value, long int uid)
     return std::make_shared<Node<T>>(value, uid);
 }
 
-TEST(rbtree, RBNodeCreate)
+
+class NodeTest : public ::testing::Test 
 {
-    Tree<double> tree;
-    Node<double> node(1.2, 0);
+    protected: 
+
+    NodeSptr<int> empty_tree_;
+    NodeSptr<int> one_node_tree_;
+    NodeSptr<int> two_node_tree_left_;
+    NodeSptr<int> two_node_tree_right_;
+    NodeSptr<int> three_node_tree_;
+
+    void SetUp() override {
+
+        // {{{ com: one node tree
+        one_node_tree_ = createNodeSptr(0, 0);
+        // }}}
+        // {{{ com two node tree left
+        two_node_tree_left_ = createNodeSptr<int>(0, 0);    
+        auto ntmp =  createNodeSptr<int>(1, 1);   
+        setLeft<int>(two_node_tree_left_,  ntmp);
+        // }}}
+        // {{{ com two node tree right
+        // two_node_tree_right_ = createNodeSptr(&t3_, 0, 0);        
+        // two_node_tree_right_->setLeft(createNodeSptr(&t3_, 1, 1));
+        // }}}
+    }
+};
+
+
+
+TEST_F(NodeTest, NodeCreate)
+{
+    Node<double> node(1.2, 5);
+    ASSERT_EQ(node.value(), 1.2);
+    ASSERT_FALSE(node.parent());
+    ASSERT_FALSE(node.left());
+    ASSERT_FALSE(node.right());
+    ASSERT_EQ(node.uid(), 5);
+    ASSERT_TRUE(node.isRed());
+    ASSERT_FALSE(node.isLeft());
+    ASSERT_FALSE(node.isRight());
+    ASSERT_TRUE(node.isLeaf());
+
+    NodeSptr<double> node_ptr = createNodeSptr(1.2, -5);
+    ASSERT_EQ(node_ptr->value(), 1.2);
+    ASSERT_FALSE(node_ptr->parent());
+    ASSERT_FALSE(node_ptr->left());
+    ASSERT_FALSE(node_ptr->right());
+    ASSERT_EQ(node_ptr->uid(), 5);
+    ASSERT_FALSE(node_ptr->isRed());
+    ASSERT_FALSE(node_ptr->isLeft());
+    ASSERT_FALSE(node_ptr->isRight());
+    ASSERT_TRUE(node_ptr->isLeaf());
 }
 
 TEST(rbtree, setLeftAndRight) 
@@ -40,64 +89,26 @@ TEST(rbtree, setLeftAndRight)
     auto n5 = createNodeSptr(5, 4);
     setLeft(n1, n2);
     setRight(n1, n3);
-
     setLeft(n1->left(), n4);
     setRight(n1->left(), n5);
 
-    fmt::print("{}\n", n1->stringify());
-    fmt::print("{}\n", n1->left()->stringify());
-    fmt::print("{}\n", n1->right()->stringify());
-    fmt::print("{}\n", n1->left()->left()->stringify());
-    fmt::print("{}\n", n1->left()->right()->stringify());
-    fmt::print("--------------------------------------------");
-    fmt::print("{} {} \n", n1->stringify(),n1.use_count()); 
-    fmt::print("{} {} \n", n2->stringify(),n2.use_count());
-    fmt::print("{} {} \n", n3->stringify(),n3.use_count());
-    fmt::print("{} {} \n", n4->stringify(),n4.use_count());
-    fmt::print("{} {} \n", n5->stringify(),n5.use_count());
+    ASSERT_EQ(n1->left(), n2);
+    ASSERT_EQ(n2->parent(), n1);
+    ASSERT_EQ(n1->right(), n3);
+    ASSERT_EQ(n3->parent(), n1);
+    ASSERT_EQ(n2->left(), n4);
+    ASSERT_EQ(n2->right(), n5);
 }
 
-/*
-class NodeTest : public ::testing::Test 
-{
-    protected: 
+// TEST_F(NodeTest, leftRotate)
+// {
+//     // auto out1 = one_node_tree_->leftRotate();
+//     // ASSERT_EQ(out1, nullptr);
+//     fmt::printf("%p\n", (void*)two_node_tree_left_.get());
+//     auto out2 = two_node_tree_left_->leftRotate();
+//     ASSERT_EQ(out2->uid(), 1);
 
-    NodeSptr<int> empty_tree_;
-    Tree<int> t1_;
-    NodeSptr<int> one_node_tree_;
-    Tree<int> t2_;
-    NodeSptr<int> two_node_tree_left_;
-    Tree<int> t3_;
-    NodeSptr<int> two_node_tree_right_;
-    Tree<int> t4_;
-    NodeSptr<int> three_node_tree_;
-
-    void SetUp() override {
-
-        // {{{ com: one node tree
-        one_node_tree_ = createNodeSptr(&t1_, 0, 0);
-        // }}}
-        // {{{ com two node tree left
-        two_node_tree_left_ = createNodeSptr(&t2_, 0, 0);        
-        two_node_tree_left_->setLeft(createNodeSptr(&t2_, 1, 1));
-        // }}}
-        // {{{ com two node tree right
-        // two_node_tree_right_ = createNodeSptr(&t3_, 0, 0);        
-        // two_node_tree_right_->setLeft(createNodeSptr(&t3_, 1, 1));
-        // }}}
-    }
-};
-
-TEST_F(NodeTest, leftRotate)
-{
-    // auto out1 = one_node_tree_->leftRotate();
-    // ASSERT_EQ(out1, nullptr);
-    fmt::printf("%p\n", (void*)two_node_tree_left_.get());
-    auto out2 = two_node_tree_left_->leftRotate();
-    ASSERT_EQ(out2->uid(), 1);
-
-}
-*/
+// }
 
 }
 }
