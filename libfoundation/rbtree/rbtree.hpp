@@ -6,10 +6,12 @@
 #include <cassert>
 #include <cstddef>
 #include <memory>
+#include <stdexcept>
 #include <utility>
 #include <iterator>
 #include <cmath>
 #include <string>
+#include <stdexcept>
 
 #include <fmt/core.h>
 
@@ -255,60 +257,50 @@ namespace rbtree
         else 
         {
             /* doc
-            If new_left is nullptr then this function simply 
-            severs the left subtree.
+            If new_right is nullptr then this function simply 
+            severs the right subtree.
             */
             if(root->right())
             {
-                // unlink the left subtree
+                // unlink the right subtree
                 root->right()->parent().reset();
-                // set the left substree to nullptre
+                // set the right substree to nullptr
                 root->right().reset();
             }
         }
     }
     // }}}
     // {{{ function: leftRotate
-    // template <class T>
-    // NodeSptr<T>  leftRotate(NodeSptr<T> x)
-    // {
-    //     NodeSptr<T> y{nullptr};
-    //     if(internal::notNull(x->left()))
-    //     {
-    //         // x is the this pointer
-    //         // create local variable to hold left child called y
-    //         y = x->left();
-    //         // set the right subtree of x to be the left subtree of y
-    //         x->right() = y->left();
-    //         // if left child of y in not null then set its parent to x
-    //         if(internal::notNull(y->left()))
-    //         {
-    //             y->left()->parent() = this;
-    //         }
-    //         // set the parent of y to the parent of x
-    //         y->parent_ = parent_;
-    //         // if x is the root node then set y to the root node
-    //         if(internal::isNull(parent_))
-    //         {
-    //             owner_->root_ = y;
-    //         }
-    //         else
-    //         {
-    //             if(isLeft())
-    //             {
-    //                 parent_->left_ = y;
-    //             }
-    //             else
-    //             {
-    //                 parent_->right_ = y;
-    //             }
-    //         }
-    //         y->left_.reset(this);
-    //         parent_ = y.get();                
-    //     }
-    //     fmt::print("{} . {}\n", y->stringify(), y.use_count());
-    //     return y;
-    // }
+    /**
+    @brief 
+    
+    @tparam T Underlying type stored by the RB-tree
+    @param[in] x node on which to perform 
+    @param[in] y     
+    @return void
+     */
+    template <class T>
+    void leftRotate(NodeSptr<T>& x, NodeSptr<T>& y)
+    {
+        assert(x);
+        assert(y);
+        assert(x->right() == y);
+
+        // set right subtree of x to left subtree of y
+        setRight(x, y->left());
+
+        // if x is not root then set y to be child of x->parent()
+        if(x->parent())
+        {
+            if(x->isLeft())
+                setLeft(x->parent(), y);
+            else if(x->isRight())
+                setRight(x->parent(), y);
+        }
+
+        // finally set x to be the left subchild of y
+        setLeft(y, x);        
+    }
     // }}}
     // }}}
     // }}}

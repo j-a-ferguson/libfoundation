@@ -32,26 +32,56 @@ class NodeTest : public ::testing::Test
     NodeSptr<int> two_node_tree_left_;
     NodeSptr<int> two_node_tree_right_;
     NodeSptr<int> three_node_tree_;
+    NodeSptr<int> five_node_tree_1_;
 
     void SetUp() override {
 
         // {{{ com: one node tree
-        one_node_tree_ = createNodeSptr(0, 0);
+        {
+            one_node_tree_ = createNodeSptr(0, 0);
+        }
         // }}}
-        // {{{ com two node tree left
-        two_node_tree_left_ = createNodeSptr<int>(0, 0);    
-        auto ntmp =  createNodeSptr<int>(1, 1);   
-        setLeft<int>(two_node_tree_left_,  ntmp);
+        // {{{ com: two node tree left
+        {
+            two_node_tree_left_ = createNodeSptr<int>(0, 0);    
+            auto ntmp =  createNodeSptr<int>(1, 1);   
+            setLeft<int>(two_node_tree_left_,  ntmp);
+        }
         // }}}
-        // {{{ com two node tree right
-        // two_node_tree_right_ = createNodeSptr(&t3_, 0, 0);        
-        // two_node_tree_right_->setLeft(createNodeSptr(&t3_, 1, 1));
+        // {{{ com: two node tree right
+        {
+            two_node_tree_right_ = createNodeSptr(0, 0);        
+            auto ntmp = createNodeSptr(1, 1);
+            setRight(two_node_tree_right_ , ntmp);
+        }
+        // }}}
+        // {{{ com: three_node_tree
+        {
+            three_node_tree_ = createNodeSptr(0, 0);
+            auto ntmp1 = createNodeSptr(1, 1);
+            auto ntmp2 = createNodeSptr(2, 2);
+            setLeft(three_node_tree_, ntmp1);
+            setRight(three_node_tree_, ntmp2);
+        }
+        // }}}
+        // {{{ com: five node tree 1
+        {
+            five_node_tree_1_ = createNodeSptr(1, 0);
+            auto n2 = createNodeSptr( 2, 1);     
+            auto n3 = createNodeSptr(3, 2);
+            auto n4 = createNodeSptr(4, 3);
+            auto n5 = createNodeSptr(5, 4);
+            setLeft(five_node_tree_1_, n2);
+            setRight(five_node_tree_1_, n3);
+            setLeft(five_node_tree_1_->left(), n4);
+            setRight(five_node_tree_1_->left(), n5);
+        }
         // }}}
     }
+
 };
 
-
-
+// {{{ test: NodeCreate
 TEST_F(NodeTest, NodeCreate)
 {
     Node<double> node(1.2, 5);
@@ -76,37 +106,49 @@ TEST_F(NodeTest, NodeCreate)
     ASSERT_FALSE(node_ptr->isRight());
     ASSERT_TRUE(node_ptr->isLeaf());
 }
+// }}}
+// {{{ test: setLeftAndRight
+TEST_F(NodeTest, setLeftAndRight) 
+{
+    ASSERT_FALSE(five_node_tree_1_->parent());
+    ASSERT_FALSE(five_node_tree_1_->isLeft());
+    ASSERT_FALSE(five_node_tree_1_->isRight());
+    ASSERT_FALSE(five_node_tree_1_->isLeaf());
+    ASSERT_EQ(five_node_tree_1_.use_count(), 3);
 
-TEST(rbtree, setLeftAndRight) 
+    ASSERT_EQ(five_node_tree_1_->left()->uid(), 1);
+    ASSERT_TRUE(five_node_tree_1_->left()->isLeft());
+    ASSERT_FALSE(five_node_tree_1_->left()->isRight());
+    ASSERT_FALSE(five_node_tree_1_->left()->isLeaf());
+    ASSERT_EQ(five_node_tree_1_->left().use_count(), 3);
+
+    ASSERT_EQ(five_node_tree_1_->right()->uid(), 2);
+    ASSERT_FALSE(five_node_tree_1_->right()->isLeft());
+    ASSERT_TRUE(five_node_tree_1_->right()->isRight());
+    ASSERT_TRUE(five_node_tree_1_->right()->isLeaf());
+    ASSERT_EQ(five_node_tree_1_->right().use_count(), 1);
+
+    ASSERT_EQ(five_node_tree_1_->left()->left()->uid(), 3);
+    ASSERT_TRUE(five_node_tree_1_->left()->left()->isLeft());
+    ASSERT_FALSE(five_node_tree_1_->left()->left()->isRight());
+    ASSERT_TRUE(five_node_tree_1_->left()->left()->isLeaf());
+    ASSERT_EQ(five_node_tree_1_->left()->left().use_count(), 1);
+
+
+    ASSERT_EQ(five_node_tree_1_->left()->right()->uid(), 4);
+    ASSERT_FALSE(five_node_tree_1_->left()->right()->isLeft());
+    ASSERT_TRUE(five_node_tree_1_->left()->right()->isRight());
+    ASSERT_TRUE(five_node_tree_1_->left()->right()->isLeaf());
+    ASSERT_EQ(five_node_tree_1_->left()->right().use_count(), 1);
+
+}
+// }}}
+// {{{ test: leftRotate
+TEST_F(NodeTest, leftRotate)
 {
 
-    Tree<int> tree;
-
-    auto n1 = createNodeSptr<int>(1, 0);
-    auto n2 = createNodeSptr<int>( 2, 1);     
-    auto n3 = createNodeSptr<int>(3, 2);
-    auto n4 = createNodeSptr(4, 3);
-    auto n5 = createNodeSptr(5, 4);
-    setLeft(n1, n2);
-    setRight(n1, n3);
-    setLeft(n1->left(), n4);
-    setRight(n1->left(), n5);
-
-    ASSERT_EQ(n1->left(), n2);
-    ASSERT_EQ(n2->parent(), n1);
-    ASSERT_EQ(n1->right(), n3);
-    ASSERT_EQ(n3->parent(), n1);
-    ASSERT_EQ(n2->left(), n4);
-    ASSERT_EQ(n2->right(), n5);
 }
-
-// TEST_F(NodeTest, leftRotate)
-// {
-//     // auto out1 = one_node_tree_->leftRotate();
-//     // ASSERT_EQ(out1, nullptr);
-//     fmt::printf("%p\n", (void*)two_node_tree_left_.get());
-//     auto out2 = two_node_tree_left_->leftRotate();
-//     ASSERT_EQ(out2->uid(), 1);
+// }}}
 
 // }
 
