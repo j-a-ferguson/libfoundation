@@ -25,11 +25,12 @@ def compile(build_type: str):
     assert shutil.which('ninja'), 'ninja not in path'
     assert shutil.which('vcpkg'), 'vcpkg not in path'
 
-
-    cmake_toolchain_file=os.path.expandvars('$VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake')
+    vcpkg_root = os.environ['VCPKG_ROOT']
+    cmake_toolchain_file = os.path.join(vcpkg_root, 'scripts', 'buildsystems', 'vcpkg.cmake')
 
     if build_type == 'All' or build_type == 'Release':
-        build_dir = os.path.join(libfoundation_root, 'build/release')
+
+        build_dir = os.path.join(libfoundation_root, 'build', 'release')
         print('>> Making directory %s' % (build_dir))
         if not os.path.isdir(build_dir):
             os.mkdir(build_dir)
@@ -53,7 +54,7 @@ def compile(build_type: str):
 
     if build_type == 'All' or build_type == 'Debug':
 
-        build_dir = os.path.join(libfoundation_root, 'build/debug')
+        build_dir = os.path.join(libfoundation_root, 'build', 'debug')
         print('>> Making directory %s' % (build_dir))
         if not os.path.isdir(build_dir):
             os.mkdir(build_dir)
@@ -79,12 +80,12 @@ def compile(build_type: str):
 
 def run_test(build_type: str):
 
-    program = 'build/%s/libfoundation/foundation-tests' % (build_type.lower())
+    program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')
     sp.run([program])
 
 def run_benchmark(build_type: str):
 
-    program = 'build/%s/libfoundation/foundation-benchmarks' % (build_type.lower())
+    program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-bechmarks')
     sp.run([program])
 
 
