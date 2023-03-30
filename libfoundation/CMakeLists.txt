@@ -7,7 +7,7 @@ find_package(GTest CONFIG REQUIRED)
 find_package(benchmark CONFIG REQUIRED)
 
 #{{{ library: foundation
-add_library(foundation SHARED core/io.cpp)
+add_library(foundation STATIC core/io.cpp)
 target_include_directories(foundation PUBLIC ${CMAKE_SOURCE_DIR})
 set_property(TARGET foundation PROPERTY CXX_STANDARD 20)
 target_link_libraries(foundation PUBLIC nlohmann_json::nlohmann_json)

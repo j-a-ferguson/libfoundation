@@ -1,5 +1,5 @@
 
-import os, shutil
+import os, shutil, sys
 import subprocess as sp
 import argparse as ap
 
@@ -36,6 +36,7 @@ def compile(build_type: str):
             os.mkdir(build_dir)
 
         cmake_cmd = ['cmake', 
+                     '-G Ninja',
                     '-DCMAKE_CXX_COMPILER=clang++', 
                     '-DCMAKE_BUILD_TYPE=Release',
                     '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', 
@@ -80,12 +81,20 @@ def compile(build_type: str):
 
 def run_test(build_type: str):
 
-    program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')
+    if sys.platform == 'win32':
+        program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', build_type, 'foundation-tests')
+    elif sys.platform == 'darwin' or sys.platform == 'linux':
+        program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')
+
     sp.run([program])
 
 def run_benchmark(build_type: str):
 
-    program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-bechmarks')
+    if sys.platform == 'win32':
+        program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', build_type, 'foundation-benchmarks')
+    elif sys.platform == 'darwin' or sys.platform == 'linux':
+        program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-benchmarks')
+
     sp.run([program])
 
 
