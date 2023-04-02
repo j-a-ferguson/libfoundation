@@ -302,7 +302,10 @@ namespace rbtree
 
 
         // set the left subtree of x to be the right subtree of y
-        setLeft(x, y->right());
+        if(y->right())
+            setLeft(x, y->right());
+        else 
+            x->left() = nullptr;
         
         if(x->parent())
         {
@@ -315,10 +318,10 @@ namespace rbtree
         else 
         {
             // if x is root then set y to be root
-            y->parent().reset();
+            y->parent() = nullptr;
         }
 
-        // 
+        // finally set x to be the right child of y 
         setRight(y, x);
     }
     // }}}

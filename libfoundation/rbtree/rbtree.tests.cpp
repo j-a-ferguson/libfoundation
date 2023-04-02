@@ -394,27 +394,27 @@ TEST_F(NodeTest2, leftRotate3)
     // test n0
     ASSERT_FALSE(n0->parent());
     ASSERT_EQ(n0->left(), n1);
-    ASSERT_EQ(n0->left(), n4);
+    ASSERT_EQ(n0->right(), n4);
     // test n1
-    // ASSERT_EQ(n1->parent(), n0);
-    // ASSERT_FALSE(n1->left());
-    // ASSERT_FALSE(n1->right());
+    ASSERT_EQ(n1->parent(), n0);
+    ASSERT_FALSE(n1->left());
+    ASSERT_FALSE(n1->right());
     // test n2
-    // ASSERT_EQ(n2->parent(), n4);
-    // ASSERT_EQ(n2->left(), n3);
-    // ASSERT_FALSE(n2->right());
+    ASSERT_EQ(n2->parent(), n4);
+    ASSERT_EQ(n2->left(), n3);
+    ASSERT_FALSE(n2->right());
     // test n3
-    // ASSERT_EQ(n3->parent(), n2);
-    // ASSERT_FALSE(n3->left());
-    // ASSERT_FALSE(n3->right());
+    ASSERT_EQ(n3->parent(), n2);
+    ASSERT_FALSE(n3->left());
+    ASSERT_FALSE(n3->right());
     // test n4
-    // ASSERT_EQ(n4->parent(), n0);
-    // ASSERT_EQ(n4->left(), n2);
-    // ASSERT_FALSE(n4->right());
+    ASSERT_EQ(n4->parent(), n0);
+    ASSERT_EQ(n4->left(), n2);
+    ASSERT_FALSE(n4->right());
 }
 // }}}
 // {{{ test: rightRotateErrors
-TEST_F(NodeTest2, rightRotateErros)
+TEST_F(NodeTest2, rightRotateErrors)
 {
     NodeSptr<int> null_ptr;
     ASSERT_THROW(rightRotate(null_ptr, one_node_tree_->right()), 
@@ -456,11 +456,26 @@ TEST_F(NodeTest2, rightRotate2)
     ASSERT_TRUE(n4);
 
     rightRotate(n0, n1);
-    ASSERT_FALSE(n1->parent());
-    ASSERT_EQ(n1->left(), n3 );
-    ASSERT_EQ(n1->right(), n0);
+    // test n0
+    ASSERT_EQ(n0->parent(), n1);
     ASSERT_EQ(n0->left(), n4);
     ASSERT_EQ(n0->right(), n2);
+    // test n1
+    ASSERT_FALSE(n1->parent());
+    ASSERT_EQ(n1->left(), n3);
+    ASSERT_EQ(n1->right(), n0);
+    // test n2
+    ASSERT_EQ(n2->parent(), n0);
+    ASSERT_FALSE(n2->left());
+    ASSERT_FALSE(n2->right());
+    // test n3
+    ASSERT_EQ(n3->parent(), n1);
+    ASSERT_FALSE(n3->left());
+    ASSERT_FALSE(n3->right());
+    // test n4
+    ASSERT_EQ(n4->parent(), n0);
+    ASSERT_FALSE(n4->left());
+    ASSERT_FALSE(n4->right());
 }
 // }}}
 // {{{ test: rightRotate3
@@ -478,7 +493,22 @@ TEST_F(NodeTest2, rightRotate3)
     ASSERT_TRUE(n4);
 
     rightRotate(n1, n3);
+    // test n0
+    ASSERT_FALSE(n0->parent());
+    ASSERT_EQ(n0->left(), n3);
+    ASSERT_EQ(n0->right(), n2);
+    // test n1
+    ASSERT_EQ(n1->parent(), n3);
+    ASSERT_FALSE(n1->left());
+    ASSERT_EQ( n1->right(), n4);
+    // test n2
+    ASSERT_EQ(n2->parent(), n0);
+    ASSERT_FALSE(n2->left());
+    ASSERT_FALSE(n2->right());
+    // test n3
     ASSERT_EQ(n3->parent(), n0);
+    ASSERT_EQ
+    
 }
 // }}}
 }

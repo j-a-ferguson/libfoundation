@@ -79,10 +79,18 @@ def compile(build_type: str):
         sp.run(['cmake', '--build', build_dir])
 
 
-def run_test(build_type: str, test_pattern: str):
+def run_test(build_type: str, test_pattern: str = ''):
 
-    program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')
-    sp.run([program])
+    program = [os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')]
+
+    if test_pattern:
+        program.append('--gtest_filter=%s' % test_pattern)
+
+    print('>> Running the libfoundation unit tests:\n')
+    for val in program:
+        print('\t%s'%val)
+    print('\n\n')
+    sp.run(program)
 
 
 
