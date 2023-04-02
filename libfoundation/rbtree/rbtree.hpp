@@ -3,7 +3,6 @@
 //  Distributed under CC0 1.0 Universal licence
 // ------------------------------------------------------
 
-#include <cassert>
 #include <cstddef>
 #include <memory>
 #include <stdexcept>
@@ -16,6 +15,7 @@
 #include <fmt/core.h>
 
 #include <libfoundation/core/io.hpp>
+#include <libfoundation/core/assertions.hpp>
 
 
 namespace foundation
@@ -25,6 +25,7 @@ namespace rbtree
     // {{{ collection: forward declarations
     template <class T>
     class Node;
+
 
     template <class T> 
     void to_json(core::Json& json, const Node<T>& node);
@@ -38,7 +39,14 @@ namespace rbtree
     @tparam T data type stored within RBNode
      */
     template <class T> 
+
     using NodeSptr = std::shared_ptr<Node<T>>;  
+
+    template <class T>
+    void setLeft(NodeSptr<T> root, NodeSptr<T> new_left);
+
+    template <class T>
+    void setRight(NodeSptr<T> root, NodeSptr<T> new_left);
 
     /**
     @brief Raw pointer type for RBNode
@@ -69,6 +77,11 @@ namespace rbtree
     template <class T>
     class Node
     {
+        // {{{ collection: friends
+        friend void setLeft<T>(NodeSptr<T> root, NodeSptr<T> new_left);
+        friend void setRight<T>(NodeSptr<T> root, NodeSptr<T> new_left);
+        // }}}
+
         private:
         // {{{ collection: private fields
         /** Value this node stores*/
@@ -196,78 +209,48 @@ namespace rbtree
     Notes on 
      */
     template <class T>
-    void setLeft(NodeSptr<T>& root, NodeSptr<T>& new_left)
+    void setLeft(NodeSptr<T> root, NodeSptr<T> new_left)
     {        
-        if(root)
+        ERR_ASSERT_THROW_INVARG_m(root, "root is nullptr");        
+        ERR_ASSERT_THROW_INVARG_m(new_left, "new_left is nullptr");        
+        // set parent of old left to null
+        auto old_left = root->left_;
+        if(old_left) old_left->parent_ = nullptr;
+        // set old parent left or right to null
+        auto old_parent = new_left->parent_;
+        if(old_parent)
         {
-            if(new_left)
-            {
-                /* doc
-                If the new left substree root is not null then 
-                the old left subtree must be unlinked by severing its' 
-                parent pointer
-                */
-                if(root->left())
-                {
-                    // unlink the left subtree 
-                    root->left()->parent().reset();
-                }
-                // link new left subtree
-                root->left() = new_left;
-                root->left()->parent() = root;
-            }
-            else 
-            {
-                /* doc
-                If new_left is nullptr then this function simply 
-                severs the left subtree.
-                */
-                if(root->left())
-                {
-                    // unlink the left subtree
-                    root->left()->parent().reset();
-                    // set the left substree to nullptre
-                    root->left().reset();
-                }
-            }
-        }
+            if(new_left->isLeft()) // if new left is left child 
+                old_parent->left_ = nullptr;
+            else if(new_left->isRight()) // if new left is right child
+                old_parent->right_ = nullptr;
+        } 
+
+        root->left_ = new_left;
+        new_left->parent_ = root;
     }
     // }}}
     // {{{ function setRight
     template <class T> 
-    void setRight(NodeSptr<T>& root, NodeSptr<T>& new_right)
+    void setRight(NodeSptr<T> root, NodeSptr<T> new_right)
     {
-        assert(root);        
-        if(new_right)
+        ERR_ASSERT_THROW_INVARG_m(root, "root is nullptr");        
+        ERR_ASSERT_THROW_INVARG_m(new_right, "new_left is nullptr");        
+        // set parent of old left to null
+        auto old_right = root->right_;
+        if(old_right) old_right->parent_ = nullptr;
+        // set old parent left or right to null
+        auto old_parent = new_right->parent_;
+        if(old_parent)
         {
-            /* doc
-            If the new right substree root is not null then 
-            the old left subtree must be unlinked by severing its' 
-            parent pointer
-            */
-            if(root->right())
-            {
-                // unlink the left subtree 
-                root->right()->parent().reset();
-            }
-            // link new left subtree
-            root->right() = new_right;
-            root->right()->parent() = root;
-        }
-        else 
-        {
-            /* doc
-            If new_right is nullptr then this function simply 
-            severs the right subtree.
-            */
-            if(root->right())
-            {
-                // unlink the right subtree
-                root->right()->parent().reset();
-                // set the right substree to nullptr
-                root->right().reset();
-            }
-        }
+            if(new_right->isLeft()) // if new left is left child 
+                old_parent->left_ = nullptr;
+            else if(new_right->isRight()) // if new left is right child
+                old_parent->right_ = nullptr;
+        } 
+
+        root->right_ = new_right;
+        new_right->parent_ = root;
     }
     // }}}
     // {{{ function: leftRotate
@@ -282,24 +265,61 @@ namespace rbtree
     template <class T>
     void leftRotate(NodeSptr<T>& x, NodeSptr<T>& y)
     {
-        assert(x);
-        assert(y);
-        assert(x->right() == y);
+        ERR_ASSERT_THROW_INVARG_m(x, "x is nullptr");
+        ERR_ASSERT_THROW_INVARG_m(y, "y is nullptr");
+        ERR_ASSERT_THROW_INVARG_m(x->right() == y, "y is not right subtree of x");
 
         // set right subtree of x to left subtree of y
-        setRight(x, y->left());
+        if(y->left())
+            setRight(x, y->left());
+        else 
+            x->right() = nullptr;
 
-        // if x is not root then set y to be child of x->parent()
         if(x->parent())
         {
+            // if x is not root then set y to be child of x->parent()
             if(x->isLeft())
                 setLeft(x->parent(), y);
             else if(x->isRight())
                 setRight(x->parent(), y);
         }
+        else
+        {
+            y->parent() = nullptr;
+        }
 
         // finally set x to be the left subchild of y
         setLeft(y, x);        
+    }
+    // }}}
+    // {{{ function: rightRotate
+    template <class T> 
+    void rightRotate(NodeSptr<T>& x, NodeSptr<T>& y)
+    {
+        ERR_ASSERT_THROW_INVARG_m(x, "x is nullptr");
+        ERR_ASSERT_THROW_INVARG_m(y, "y is nullptr");
+        ERR_ASSERT_THROW_INVARG_m(x->left() == y, "y is not left subtree of x");
+
+
+        // set the left subtree of x to be the right subtree of y
+        setLeft(x, y->right());
+        
+        if(x->parent())
+        {
+            // if x is not root then set y to be child of x->parent()
+            if(x->isLeft())
+                setLeft(x->parent(), y);
+            else if(x->isRight())
+                setRight(x->parent(), y);
+        }
+        else 
+        {
+            // if x is root then set y to be root
+            y->parent().reset();
+        }
+
+        // 
+        setRight(y, x);
     }
     // }}}
     // }}}

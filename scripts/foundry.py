@@ -71,6 +71,7 @@ def compile(build_type: str):
         print('>> Running CMake with arguments:\n')
         for i in range(1, len(cmake_cmd)):
             print('\t%s' % cmake_cmd[i]) 
+        print('\n\n')
         sp.run(cmake_cmd)    
     
         print('>> Running Cmake with arguments:\n')
@@ -78,10 +79,12 @@ def compile(build_type: str):
         sp.run(['cmake', '--build', build_dir])
 
 
-def run_test(build_type: str):
+def run_test(build_type: str, test_pattern: str):
 
     program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')
     sp.run([program])
+
+
 
 def run_benchmark(build_type: str):
 
