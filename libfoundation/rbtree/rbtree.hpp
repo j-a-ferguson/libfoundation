@@ -144,7 +144,8 @@ namespace rbtree
         // }}}
         // {{{ collection: queries
         bool isRed() {
-            return !std::signbit(uid_);
+            bool is_red = (uid_ >= 0);
+            return is_red;
         }
 
         bool isLeft() {
