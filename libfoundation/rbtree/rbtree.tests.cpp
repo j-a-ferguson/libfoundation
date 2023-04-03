@@ -507,7 +507,12 @@ TEST_F(NodeTest2, rightRotate3)
     ASSERT_FALSE(n2->right());
     // test n3
     ASSERT_EQ(n3->parent(), n0);
-    ASSERT_EQ
+    ASSERT_FALSE(n3->left());
+    ASSERT_EQ(n3->right(), n1);
+    // test n4
+    ASSERT_EQ(n4->parent(), n1);
+    ASSERT_FALSE(n4->left());
+    ASSERT_FALSE(n4->right());
     
 }
 // }}}
