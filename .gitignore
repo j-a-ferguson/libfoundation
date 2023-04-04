@@ -84,6 +84,8 @@ html/
 doxygen-awesome-css/
 .cache/
 archive/
+#................... vscode specific stuff
+.vscode/settings.json
 
 # ................ git commit message file
 git-message.txt

@@ -82,7 +82,11 @@ def compile(build_type: str):
 
 def run_test(build_type: str, test_pattern: str = ''):
 
-    program = [os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')]
+
+    if sys.platform == 'win32':
+        program = [os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', build_type, 'foundation-tests')]
+    elif sys.platform == 'darwin' or sys.platform == 'linux':
+        program = [os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')]
 
     if test_pattern:
         program.append('--gtest_filter=%s' % test_pattern)
@@ -91,15 +95,11 @@ def run_test(build_type: str, test_pattern: str = ''):
     for val in program:
         print('\t%s'%val)
     print('\n\n')
+
     sp.run(program)
 
 
-    if sys.platform == 'win32':
-        program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', build_type, 'foundation-tests')
-    elif sys.platform == 'darwin' or sys.platform == 'linux':
-        program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')
 
-    sp.run([program])
 
 def run_benchmark(build_type: str):
 
