@@ -60,9 +60,11 @@ def compile(build_type: str):
         if not os.path.isdir(build_dir):
             os.mkdir(build_dir)
 
+        cxx_compiler = os.environ['CXX']
 
         cmake_cmd = ['cmake', 
-                    '-DCMAKE_CXX_COMPILER=clang++', 
+                     '-G Ninja',
+                    '-DCMAKE_CXX_COMPILER=%s' % cxx_compiler, 
                     '-DCMAKE_BUILD_TYPE=Debug',
                     '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', 
                     '-DCMAKE_TOOLCHAIN_FILE='+cmake_toolchain_file, 
