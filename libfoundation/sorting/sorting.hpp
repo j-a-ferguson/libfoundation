@@ -6,12 +6,12 @@
 #ifndef SORTING_HPP_
 #define SORTING_HPP_
 
-#include <libfoundation/heaps/heaps.hpp>
-
 #include <algorithm>
 #include <iterator>
 #include <stack>
 #include <utility>
+
+#include <libfoundation/heaps/heaps.hpp>
 
 namespace foundation
 {
@@ -49,16 +49,32 @@ void insertionSort(BidirIt start, BidirIt end)
 {
     using Value = ValueType<BidirIt>;
 
-    for (auto it1 = std::next(start); it1 != end; ++it1)
+    if (start != end)
     {
-        Value key = *it1;
-        auto  it2 = std::prev(it1);
-        while (it2 != start && ((*it2) > key))
+        for (auto j_iter = std::next(start); j_iter != end; std::advance(j_iter, 1))
         {
-            *it2 = *it1;
-            --it2;
+            Value key = *j_iter;
+            auto  i_iter = std::prev(j_iter);
+            auto  i   = std::distance(start, i_iter);
+
+            while(i > 0 && (*i_iter) > key)
+            {
+                std::iter_swap(std::next(i_iter), i_iter);
+                --i;
+                std::advance(i_iter, -1);
+            }
+
+            if(i == 0 && (*i_iter > key))
+            {
+                std::iter_swap(std::next(i_iter), i_iter);
+                (*start) = key;
+            }
+            else 
+            {
+                (*std::next(i_iter)) = key;
+            }
+
         }
-        *(std::next(it2)) = key;
     }
 }
 //}}}

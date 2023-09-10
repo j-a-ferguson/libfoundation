@@ -17,78 +17,59 @@ def clean():
     os.mkdir(build_dir)
 
 
-def compile(build_type: str):
+def run_cmake(build_type: str):
 
-    assert shutil.which('clang'), 'clang not in path'
-    assert shutil.which('clang++'), 'clang++ not in path'
-    assert shutil.which('cmake'), 'cmake not in path'
-    assert shutil.which('ninja'), 'ninja not in path'
-    assert shutil.which('vcpkg'), 'vcpkg not in path'
-
+    cxx_compiler = os.environ['CXX']
     vcpkg_root = os.environ['VCPKG_ROOT']
     cmake_toolchain_file = os.path.join(vcpkg_root, 'scripts', 'buildsystems', 'vcpkg.cmake')
 
-    if build_type == 'All' or build_type == 'Release':
+    build_dir = os.path.join(libfoundation_root, 'build', build_type.lower())
 
-        build_dir = os.path.join(libfoundation_root, 'build', 'release')
-        print('>> Making directory %s' % (build_dir))
-        if not os.path.isdir(build_dir):
-            os.mkdir(build_dir)
+    print('>> Making directory %s' % (build_dir))
+    if not os.path.isdir(build_dir):
+        os.mkdir(build_dir)
 
-        cmake_cmd = ['cmake', 
-                     '-G Ninja',
-                    '-DCMAKE_CXX_COMPILER=clang++', 
-                    '-DCMAKE_BUILD_TYPE=Release',
-                    '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', 
-                    '-DCMAKE_TOOLCHAIN_FILE='+cmake_toolchain_file, 
-                    '-S %s' % libfoundation_root, 
-                    '-B %s' % build_dir]
+    cmake_cmd = ['cmake', 
+                '-G Ninja',
+                '-DCMAKE_CXX_COMPILER=' + cxx_compiler, 
+                '-DCMAKE_BUILD_TYPE=' + build_type,
+                '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', 
+                '-DCMAKE_TOOLCHAIN_FILE='+cmake_toolchain_file, 
+                '-S %s' % libfoundation_root, 
+                '-B %s' % build_dir]
 
-        print('>> Running CMake with arguments:\n')
-        for i in range(1, len(cmake_cmd)):
-            print('\t%s' % cmake_cmd[i]) 
-        sp.run(cmake_cmd)    
+    print('>> Running CMake with arguments:\n')
+    for i in range(1, len(cmake_cmd)):
+        print('\t%s' % cmake_cmd[i]) 
+    sp.run(cmake_cmd)    
+
+    print('>> Running Cmake with arguments:\n')
+    print('--build %s' % build_dir) 
+    sp.run(['cmake', '--build', build_dir])
     
-        print('>> Running Cmake with arguments:\n')
-        print('--build %s' % build_dir) 
-        sp.run(['cmake', '--build', build_dir])
+    
+
+def compile(build_type: str):
+
+    assert 'CXX' in os.environ, 'CXX not set'
+    assert shutil.which('cmake'), 'cmake not in path'
+    assert shutil.which('ninja'), 'ninja not in path'
+    assert shutil.which('vcpkg'), 'vcpkg not in path'
+    assert 'VCPKG_ROOT' in os.environ, 'VCPKG_ROOT not set'
+
 
     if build_type == 'All' or build_type == 'Debug':
+        run_cmake('Debug')
 
-        build_dir = os.path.join(libfoundation_root, 'build', 'debug')
-        print('>> Making directory %s' % (build_dir))
-        if not os.path.isdir(build_dir):
-            os.mkdir(build_dir)
+    if build_type == 'All' or build_type == 'Release':
+        run_cmake('Release')
 
-        cxx_compiler = os.environ['CXX']
-
-        cmake_cmd = ['cmake', 
-                     '-G Ninja',
-                    '-DCMAKE_CXX_COMPILER=%s' % cxx_compiler, 
-                    '-DCMAKE_BUILD_TYPE=Debug',
-                    '-DCMAKE_EXPORT_COMPILE_COMMANDS=ON', 
-                    '-DCMAKE_TOOLCHAIN_FILE='+cmake_toolchain_file, 
-                    '-S %s' % libfoundation_root, 
-                    '-B %s' % build_dir]
-
-        print('>> Running CMake with arguments:\n')
-        for i in range(1, len(cmake_cmd)):
-            print('\t%s' % cmake_cmd[i]) 
-        print('\n\n')
-        sp.run(cmake_cmd)    
-    
-        print('>> Running Cmake with arguments:\n')
-        print('--build %s' % build_dir) 
-        sp.run(['cmake', '--build', build_dir])
 
 
 def run_test(build_type: str, test_pattern: str = ''):
 
 
-    if sys.platform == 'win32':
-        program = [os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', build_type, 'foundation-tests')]
-    elif sys.platform == 'darwin' or sys.platform == 'linux':
-        program = [os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')]
+    program = [os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-tests')]
 
     if test_pattern:
         program.append('--gtest_filter=%s' % test_pattern)
@@ -103,14 +84,19 @@ def run_test(build_type: str, test_pattern: str = ''):
 
 
 
-def run_benchmark(build_type: str):
+def run_benchmark(build_type: str, benchmark_pattern: str = ''):
 
-    if sys.platform == 'win32':
-        program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', build_type, 'foundation-benchmarks')
-    elif sys.platform == 'darwin' or sys.platform == 'linux':
-        program = os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-benchmarks')
 
-    sp.run([program])
+    program = [os.path.join(libfoundation_root, 'build', build_type.lower(), 'libfoundation', 'foundation-benchmarks')]
+
+    if benchmark_pattern:
+        program.append('--benchmark_filter=%s' % benchmark_pattern)
+
+    print('>> Running the libfoundation benchmarks:\n')
+    for val in program:
+        print('\t%s'%val)
+    print('\n\n')
+    sp.run(program)
 
 
 

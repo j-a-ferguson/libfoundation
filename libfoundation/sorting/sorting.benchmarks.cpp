@@ -11,7 +11,7 @@
 
 
 // {{{ collection: insertion sort benchmarks
-static void BM_insertionSortBest(benchmark::State& state)
+static void BMinsertionSortBest(benchmark::State& state)
 {
     std::vector<int> data(state.range());
     std::iota(data.begin(), data.end(), 0);
@@ -22,12 +22,12 @@ static void BM_insertionSortBest(benchmark::State& state)
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_insertionSortBest)
+BENCHMARK(BMinsertionSortBest)
     ->RangeMultiplier(2)
     ->Range(1 << 5, 1 << 15)
-    ->Complexity(benchmark::oN);
+    ->Complexity(benchmark::oAuto);
 
-static void BM_insertionSortAverage(benchmark::State& state)
+static void BMinsertionSortAverage(benchmark::State& state)
 {
     std::vector<int> data(state.range());
     std::generate(data.begin(), data.end(), std::rand);
@@ -38,12 +38,12 @@ static void BM_insertionSortAverage(benchmark::State& state)
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_insertionSortAverage)
+BENCHMARK(BMinsertionSortAverage)
     ->RangeMultiplier(2)
     ->Range(1 << 5, 1 << 15)
-    ->Complexity(benchmark::oN);
+    ->Complexity(benchmark::oAuto);
 
-static void BM_insertionSortWorst(benchmark::State& state)
+static void BMinsertionSortWorst(benchmark::State& state)
 {
     std::vector<int> data(state.range());
     std::iota(data.begin(), data.end(), 0);
@@ -55,10 +55,108 @@ static void BM_insertionSortWorst(benchmark::State& state)
     }
     state.SetComplexityN(state.range(0));
 }
-BENCHMARK(BM_insertionSortWorst)
+BENCHMARK(BMinsertionSortWorst)
     ->RangeMultiplier(2)
     ->Range(1 << 5, 1 << 15)
-    ->Complexity(benchmark::oN);
+    ->Complexity(benchmark::oAuto);
 // }}}
-// {{{ collection
+// {{{ collection: heap sort benchmarks
+static void BMheapSortBest(benchmark::State& state)
+{
+    std::vector<int> data(state.range());
+    std::iota(data.begin(), data.end(), 0);
+
+    for (auto _ : state)
+    {
+        foundation::sorting::heapSort(data.begin(), data.end());
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BMheapSortBest)
+    ->RangeMultiplier(2)
+    ->Range(1 << 5, 1 << 15)
+    ->Complexity(benchmark::oAuto);
+
+static void BMheapSortAverage(benchmark::State& state)
+{
+    std::vector<int> data(state.range());
+    std::generate(data.begin(), data.end(), std::rand);
+
+    for (auto _ : state)
+    {
+        foundation::sorting::heapSort(data.begin(), data.end());
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BMheapSortAverage)
+    ->RangeMultiplier(2)
+    ->Range(1 << 5, 1 << 15)
+    ->Complexity(benchmark::oAuto);
+
+static void BMheapSortWorst(benchmark::State& state)
+{
+    std::vector<int> data(state.range());
+    std::iota(data.begin(), data.end(), 0);
+    std::reverse(data.begin(), data.end());
+
+    for (auto _ : state)
+    {
+        foundation::sorting::heapSort(data.begin(), data.end());
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BMheapSortWorst)
+    ->RangeMultiplier(2)
+    ->Range(1 << 5, 1 << 15)
+    ->Complexity(benchmark::oAuto);
+// }}}
+// {{{ collection: heap sort benchmarks
+static void BMquickSortBest(benchmark::State& state)
+{
+    std::vector<int> data(state.range());
+    std::iota(data.begin(), data.end(), 0);
+
+    for (auto _ : state)
+    {
+        foundation::sorting::heapSort(data.begin(), data.end());
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BMheapSortBest)
+    ->RangeMultiplier(2)
+    ->Range(1 << 5, 1 << 15)
+    ->Complexity(benchmark::oAuto);
+
+static void BMquickSortAverage(benchmark::State& state)
+{
+    std::vector<int> data(state.range());
+    std::generate(data.begin(), data.end(), std::rand);
+
+    for (auto _ : state)
+    {
+        foundation::sorting::heapSort(data.begin(), data.end());
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BMheapSortAverage)
+    ->RangeMultiplier(2)
+    ->Range(1 << 5, 1 << 15)
+    ->Complexity(benchmark::oAuto);
+
+static void BMquickSortWorst(benchmark::State& state)
+{
+    std::vector<int> data(state.range());
+    std::iota(data.begin(), data.end(), 0);
+    std::reverse(data.begin(), data.end());
+
+    for (auto _ : state)
+    {
+        foundation::sorting::heapSort(data.begin(), data.end());
+    }
+    state.SetComplexityN(state.range(0));
+}
+BENCHMARK(BMheapSortWorst)
+    ->RangeMultiplier(2)
+    ->Range(1 << 5, 1 << 15)
+    ->Complexity(benchmark::oAuto);
 // }}}

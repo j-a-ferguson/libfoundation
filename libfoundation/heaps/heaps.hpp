@@ -82,7 +82,6 @@ void heapify(BidirIt begin, DiffType<BidirIt> heap_size, DiffType<BidirIt> i)
     {
         Diff l            = left<BidirIt>(i);
         Diff r            = right<BidirIt>(i);
-        std::printf("l - i = %d", l -i)
         auto l_iter       = std::next(i_iter, l - i);
         auto r_iter       = std::next(l_iter, 1);
         auto largest_iter = i_iter;

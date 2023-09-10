@@ -3,6 +3,7 @@
 //  Distributed under CC0 1.0 Universal licence
 // ------------------------------------------------------
 
+#include "gtest/gtest.h"
 #include <fmt/color.h>
 #include <fmt/core.h>
 #include <gtest/gtest.h>
@@ -19,8 +20,68 @@ namespace foundation
 namespace sorting 
 {
 
+template <typename List>
+class SortingTest : ::testing::Test
+{
+    protected: 
+
+    List list0_;
+    List list1_;
+    List list2_;
+    List list3_;
+    List list4_;
+    List list5_;
+    List list6_;
+    List list7_;
+    List list8_;
+    List list9_;
+    List list10_;
+    List list100_;
+    List list1000_;
+    List list10000_;
+
+
+    void SetUp() override
+    {
+        list1_ = {0};
+        list2_ = {5, 4};
+    }
+};
+
+TYPED_TEST_SUITE_P(SortingTest);
+
 // {{{ col: insertion sort tests
-TEST(sorting, insertionSort)
+TEST(sorting, insertionSort0)
+{
+    std::vector<int> empty_array;
+    insertionSort(empty_array.begin(), empty_array.end());
+    ASSERT_TRUE(empty_array.empty());
+}
+
+TEST(sorting, insertionSort1)
+{
+    std::vector<int> len1_array = {4};
+    insertionSort(len1_array.begin(), len1_array.end());
+    ASSERT_EQ(len1_array.size(), 1);
+    ASSERT_EQ(len1_array[0], 4);
+}
+
+TEST(sorting, insertionSort2)
+{
+    std::vector<int> array1 = {4, 5};
+    insertionSort(array1.begin(), array1.end());
+    ASSERT_EQ(array1.size(), 2);
+    ASSERT_EQ(array1[0], 4);
+    ASSERT_EQ(array1[1], 5);
+
+    std::vector<int> array2 = {5, 4};
+    insertionSort(array2.begin(), array2.end());
+    ASSERT_EQ(array2.size(), 2);
+    ASSERT_EQ(array2[0], 4);
+    ASSERT_EQ(array2[1], 5);
+}
+
+TEST(sorting, insertionSort100)
 {
     std::vector<int> integers(100);
     std::generate(integers.begin(), integers.end(), std::rand);
