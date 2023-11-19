@@ -22,7 +22,7 @@ namespace foundation
 {
 namespace rbtree
 {
-    // {{{ collection: forward declarations
+    // ....................................................................... forwared declarations
     template <class T>
     class Node;
 
@@ -39,7 +39,6 @@ namespace rbtree
     @tparam T data type stored within RBNode
      */
     template <class T> 
-
     using NodeSptr = std::shared_ptr<Node<T>>;  
 
     template <class T>
@@ -58,9 +57,8 @@ namespace rbtree
 
     template <class T> 
     class Tree;
-    // }}}
-    // {{{ collection Node
-    // {{{ class Node
+
+    // ..............................................................................  class Node
     /**
     @brief Node class of the red-black tree.
     
@@ -77,11 +75,11 @@ namespace rbtree
     template <class T>
     class Node
     {
-        // {{{ collection: friends
+        // ...................................... friends
         friend void setLeft<T>(NodeSptr<T> root, NodeSptr<T> new_left);
         friend void setRight<T>(NodeSptr<T> root, NodeSptr<T> new_left);
-        // }}}
 
+        // ...................................... private members 
         private:
         // {{{ collection: private fields
         /** Value this node stores*/
@@ -94,19 +92,17 @@ namespace rbtree
         NodeSptr<T> right_;
         /** Sign bit is the color, positive = red and negative = black. Remaining bits are the uid*/
         long int uid_{0};        
-        // }}}  
+
+        //....................................... public methods
         public:
 
 
-        // {{{ collection: creation/destruction
         Node() = default;
         Node(const T& value, long int uid)
         {
             value_ = value;
             uid_ = uid;
         }
-        // }}}
-        // {{{ collection: accessors
         T& value() {
             return value_;
         }
@@ -141,8 +137,6 @@ namespace rbtree
         long int uid() const {
             return std::abs(uid_);
         }        
-        // }}}
-        // {{{ collection: queries
         bool isRed() {
             bool is_red = (uid_ >= 0);
             return is_red;
@@ -170,18 +164,15 @@ namespace rbtree
             bool is_leaf{(!left_) && (!right_)};
             return is_leaf;
         }
-        // }}}
-        // {{{ collection: io
-        std::string stringify()
+
+        std::string toString()
         {
             core::Json json = *this;
             std::string out = json.dump(2);
             return out;
         }
-        // }}}
     };
-    // }}}
-    // {{{ function: to_json
+
     template <class T> 
     void to_json(core::Json& json, const Node<T>& node) {
         json["value"] = node.value();
@@ -197,9 +188,7 @@ namespace rbtree
             json["right"] = node.right()->uid();
 
     }
-    // }}}
-    // {{{ collection: node alteration 
-    // {{{ function: setLeft
+
     /**
     @brief Sets the left child of a given node.
     
@@ -230,8 +219,7 @@ namespace rbtree
         root->left_ = new_left;
         new_left->parent_ = root;
     }
-    // }}}
-    // {{{ function setRight
+
     template <class T> 
     void setRight(NodeSptr<T> root, NodeSptr<T> new_right)
     {
@@ -253,8 +241,7 @@ namespace rbtree
         root->right_ = new_right;
         new_right->parent_ = root;
     }
-    // }}}
-    // {{{ function: leftRotate
+
     /**
     @brief 
     
@@ -292,8 +279,8 @@ namespace rbtree
         // finally set x to be the left subchild of y
         setLeft(y, x);        
     }
-    // }}}
-    // {{{ function: rightRotate
+
+
     template <class T> 
     void rightRotate(NodeSptr<T>& x, NodeSptr<T>& y)
     {
@@ -325,10 +312,8 @@ namespace rbtree
         // finally set x to be the right child of y 
         setRight(y, x);
     }
-    // }}}
-    // }}}
-    // }}}
-    // {{{ class RBTree
+
+    // .................................................................................class RBTree
     template <class T>
     class Tree
     {
