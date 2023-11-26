@@ -5,10 +5,13 @@
 
 #include <memory>
 #include <stdexcept>
+
+#include <libfoundation/core/io.hpp>
 #include <libfoundation/rbtree/rbtree.hpp>
 
 #include <fmt/color.h>
 #include <fmt/core.h>
+#include <fmt/format.h>
 #include <fmt/printf.h>
 #include <gtest/gtest.h>
 
@@ -26,7 +29,7 @@ NodeSptr<T> createNodeSptr(const T& value, long int uid)
 // These tests are for very low-level, simple functions
 // they are tested separately from the main test suite as the 
 // main test suite depends upon the functions tested here.
-// {{{ test: NodeCreate
+
 TEST(NodeTest1, NodeCreate)
 {
     Node<double> node(1.2, 5);
@@ -51,8 +54,8 @@ TEST(NodeTest1, NodeCreate)
     ASSERT_FALSE(node_ptr->isRight());
     ASSERT_TRUE(node_ptr->isLeaf());
 }
-// }}}
-// {{{ test: setLeft1
+
+
 TEST(NodeTest1, setLeft1)
 {
     NodeSptr<int> n0 = createNodeSptr(0, 0);
@@ -67,8 +70,8 @@ TEST(NodeTest1, setLeft1)
     ASSERT_FALSE(n1->right());
     
 }
-// }}}
-// {{{ test: setLeft2
+
+
 TEST(NodeTest1, setLeft2)
 {
     // create the nodes
@@ -130,8 +133,8 @@ TEST(NodeTest1, setLeft2)
     ASSERT_FALSE(n7->left());
     ASSERT_FALSE(n7->right());
 }
-// }}}
-// {{{ test: setRight1
+
+
 TEST(NodeTest1, setRight1)
 {
     NodeSptr<int> n0 = createNodeSptr(0, 0);
@@ -144,8 +147,8 @@ TEST(NodeTest1, setRight1)
     ASSERT_FALSE(n1->left());
     ASSERT_FALSE(n1->right());
 }
-// }}}
-// {{{ test: setRight2
+
+
 TEST(NodeTest1, setRight2)
 {
     // create the nodes
@@ -207,9 +210,29 @@ TEST(NodeTest1, setRight2)
     ASSERT_FALSE(n7->left());
     ASSERT_FALSE(n7->right());
 }
-// }}}
 
-// {{{ class NodeTest2
+// std::string format_as(Node<int> node)
+// {
+
+//     core::Json json = node.toJson();
+//     std::string json_str = json.dump(4);
+//     return json_str;
+// }
+
+TEST(NodeTest1, toJson)
+{
+
+    NodeSptr<int> n0 = createNodeSptr(0, 0);
+    NodeSptr<int> n1 = createNodeSptr(1, 1);
+    setLeft(n0, n1);
+
+    core::Json json = n0->toJson();
+    core::print("{}", *n0);
+    core::print("{}", *n1);
+}
+
+
+
 class NodeTest2 : public ::testing::Test 
 {
     protected: 
@@ -224,26 +247,26 @@ class NodeTest2 : public ::testing::Test
 
     void SetUp() override {
 
-        // {{{ com: one node tree
+        
         {
             one_node_tree_ = createNodeSptr(0, 0);
         }
-        // }}}
-        // {{{ com: two node tree left
+        
+        
         {
             two_node_tree_left_ = createNodeSptr<int>(0, 0);    
             auto ntmp =  createNodeSptr<int>(1, 1);   
             setLeft<int>(two_node_tree_left_,  ntmp);
         }
-        // }}}
-        // {{{ com: two node tree right
+        
+        
         {
             two_node_tree_right_ = createNodeSptr(0, 0);        
             auto ntmp = createNodeSptr(1, 1);
             setRight(two_node_tree_right_ , ntmp);
         }
-        // }}}
-        // {{{ com: three_node_tree
+        
+        
         {
             three_node_tree_ = createNodeSptr(0, 0);
             auto ntmp1 = createNodeSptr(1, 1);
@@ -251,8 +274,8 @@ class NodeTest2 : public ::testing::Test
             setLeft(three_node_tree_, ntmp1);
             setRight(three_node_tree_, ntmp2);
         }
-        // }}}
-        // {{{ com: five node tree 1
+        
+        
         {
             five_node_tree_1_ = createNodeSptr(1, 0);
             auto n2 = createNodeSptr( 2, 1);     
@@ -264,8 +287,8 @@ class NodeTest2 : public ::testing::Test
             setLeft(five_node_tree_1_->left(), n4);
             setRight(five_node_tree_1_->left(), n5);
         }
-        // }}}
-        // {{{ com: five node tree 2
+        
+        
         {
             five_node_tree_2_= createNodeSptr(1, 0);
             auto n2 = createNodeSptr( 2, 1);     
@@ -277,12 +300,12 @@ class NodeTest2 : public ::testing::Test
             setLeft(five_node_tree_2_->right(), n4);
             setRight(five_node_tree_2_->right(), n5);
         }
-        // }}}
+        
     }
 
 };
-// }}}
-// {{{ test: setLeftAndRight
+
+
 TEST_F(NodeTest2, setLeftAndRight1) 
 {
     ASSERT_FALSE(five_node_tree_1_->parent());
@@ -317,8 +340,8 @@ TEST_F(NodeTest2, setLeftAndRight1)
     ASSERT_EQ(five_node_tree_1_->left()->right().use_count(), 1);
 
 }
-// }}}
-// {{{ test: leftRotateErrors
+
+
 TEST_F(NodeTest2, leftRotateErrors)
 {
     NodeSptr<int> null_ptr;
@@ -331,8 +354,8 @@ TEST_F(NodeTest2, leftRotateErrors)
     ASSERT_THROW(leftRotate(two_node_tree_left_, two_node_tree_left_->left()), 
                 std::invalid_argument);
 }
-// }}}
-// {{{ test: leftRotate1
+
+
 TEST_F(NodeTest2, leftRotate1)
 {
     auto x = two_node_tree_right_;
@@ -346,8 +369,8 @@ TEST_F(NodeTest2, leftRotate1)
     ASSERT_FALSE(x->right());
 
 }
-// }}}
-// {{{ test: leftRotate2
+
+
 TEST_F(NodeTest2, leftRotate2)
 {
     auto n0 = five_node_tree_2_;
@@ -375,8 +398,8 @@ TEST_F(NodeTest2, leftRotate2)
     ASSERT_FALSE(n3->left());
     ASSERT_FALSE(n3->right());
 }
-// }}}
-// {{{ test: leftRotate3
+
+
 TEST_F(NodeTest2, leftRotate3)
 {
     auto n0 = five_node_tree_2_;
@@ -412,8 +435,8 @@ TEST_F(NodeTest2, leftRotate3)
     ASSERT_EQ(n4->left(), n2);
     ASSERT_FALSE(n4->right());
 }
-// }}}
-// {{{ test: rightRotateErrors
+
+
 TEST_F(NodeTest2, rightRotateErrors)
 {
     NodeSptr<int> null_ptr;
@@ -426,8 +449,8 @@ TEST_F(NodeTest2, rightRotateErrors)
     ASSERT_THROW(rightRotate(two_node_tree_right_, two_node_tree_right_->right()), 
                 std::invalid_argument);
 }
-// }}}
-// {{{ test: rightRotate1 
+
+
 TEST_F(NodeTest2, rightRotate1)
 {
     auto x = two_node_tree_left_;
@@ -440,8 +463,8 @@ TEST_F(NodeTest2, rightRotate1)
     ASSERT_FALSE(x->left());
     ASSERT_FALSE(x->right());
 }
-// }}}
-// {{{ test: rightRotate2
+
+
 TEST_F(NodeTest2, rightRotate2)
 {
     auto n0 = five_node_tree_1_;
@@ -477,8 +500,8 @@ TEST_F(NodeTest2, rightRotate2)
     ASSERT_FALSE(n4->left());
     ASSERT_FALSE(n4->right());
 }
-// }}}
-// {{{ test: rightRotate3
+
+
 TEST_F(NodeTest2, rightRotate3)
 {
     auto n0 = five_node_tree_1_;
@@ -515,6 +538,30 @@ TEST_F(NodeTest2, rightRotate3)
     ASSERT_FALSE(n4->right());
     
 }
-// }}}
+
+
+class TreeTest: public testing::Test 
+{
+    protected:
+
+    Tree<int> tree1_;
+
+    void SetUp() override 
+    {
+
+    };
+};
+
+
+TEST_F(TreeTest, insert1)
+{
+    for(int i = 0; i < 10; ++i)
+    {
+        auto out = tree1_.insert(i);
+        core::print("i = {} {} {}\n", i, out.first, *out.second);
+    }
+    core::print("{}\n", tree1_);
+}
+
 }
 }

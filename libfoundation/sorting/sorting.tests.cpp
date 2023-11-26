@@ -50,7 +50,7 @@ class SortingTest : ::testing::Test
 
 TYPED_TEST_SUITE_P(SortingTest);
 
-// {{{ col: insertion sort tests
+
 TEST(sorting, insertionSort0)
 {
     std::vector<int> empty_array;
@@ -89,8 +89,8 @@ TEST(sorting, insertionSort100)
     insertionSort(integers.begin(), integers.end());
     ASSERT_TRUE(std::is_sorted(integers.begin(), integers.end()));
 }
-// }}}
-// {{{ col: heap sort tests
+
+
 TEST(sorting, heapSort)
 {
     std::vector<int> integers(100);
@@ -99,8 +99,8 @@ TEST(sorting, heapSort)
     heapSort(integers.begin(), integers.end());
     ASSERT_TRUE(std::is_sorted(integers.begin(), integers.end()));
 }
-// }}}
-// {{{ col: quick sort tests
+
+
 TEST(sorting, partition1)
 {
     std::vector<int> input;

@@ -10,7 +10,7 @@
 #include <benchmark/benchmark.h>
 
 
-// {{{ collection: insertion sort benchmarks
+
 static void BMinsertionSortBest(benchmark::State& state)
 {
     std::vector<int> data(state.range());
@@ -59,8 +59,8 @@ BENCHMARK(BMinsertionSortWorst)
     ->RangeMultiplier(2)
     ->Range(1 << 5, 1 << 15)
     ->Complexity(benchmark::oAuto);
-// }}}
-// {{{ collection: heap sort benchmarks
+
+
 static void BMheapSortBest(benchmark::State& state)
 {
     std::vector<int> data(state.range());
@@ -109,8 +109,8 @@ BENCHMARK(BMheapSortWorst)
     ->RangeMultiplier(2)
     ->Range(1 << 5, 1 << 15)
     ->Complexity(benchmark::oAuto);
-// }}}
-// {{{ collection: heap sort benchmarks
+
+
 static void BMquickSortBest(benchmark::State& state)
 {
     std::vector<int> data(state.range());
@@ -159,4 +159,3 @@ BENCHMARK(BMheapSortWorst)
     ->RangeMultiplier(2)
     ->Range(1 << 5, 1 << 15)
     ->Complexity(benchmark::oAuto);
-// }}}

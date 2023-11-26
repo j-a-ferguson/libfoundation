@@ -5,12 +5,12 @@
 
 #include <cstddef>
 #include <memory>
-#include <stdexcept>
 #include <utility>
 #include <iterator>
 #include <cmath>
 #include <string>
-#include <stdexcept>
+#include <limits>
+#include <stack>
 
 #include <fmt/core.h>
 
@@ -22,16 +22,12 @@ namespace foundation
 {
 namespace rbtree
 {
+
     // ....................................................................... forwared declarations
+    static const long int NIL_UID = std::numeric_limits<long int>::max();
+
     template <class T>
     class Node;
-
-
-    template <class T> 
-    void to_json(core::Json& json, const Node<T>& node);
-
-    template <class T> 
-    void from_json(const core::Json* json, Node<T>& node);
 
     /**
     @brief Shared pointer type for RBNode 
@@ -47,17 +43,9 @@ namespace rbtree
     template <class T>
     void setRight(NodeSptr<T> root, NodeSptr<T> new_left);
 
-    /**
-    @brief Raw pointer type for RBNode
-    
-    @tparam T data type stored within RBNode
-     */
-    template <class T> 
-    using NodeRptr = Node<T>*;
 
     template <class T> 
     class Tree;
-
     // ..............................................................................  class Node
     /**
     @brief Node class of the red-black tree.
@@ -76,22 +64,23 @@ namespace rbtree
     class Node
     {
         // ...................................... friends
+        friend class Tree<T>;
         friend void setLeft<T>(NodeSptr<T> root, NodeSptr<T> new_left);
         friend void setRight<T>(NodeSptr<T> root, NodeSptr<T> new_left);
 
         // ...................................... private members 
         private:
-        // {{{ collection: private fields
+        
         /** Value this node stores*/
         T value_{};
+        /** Sign bit is the color, positive = red and negative = black. Remaining bits are the uid*/
+        long int uid_{0};        
         /** Pointer to the parent */
         NodeSptr<T> parent_;
         /** Pointer to the left child */
         NodeSptr<T> left_;
         /** Pointer to thr right child */
         NodeSptr<T> right_;
-        /** Sign bit is the color, positive = red and negative = black. Remaining bits are the uid*/
-        long int uid_{0};        
 
         //....................................... public methods
         public:
@@ -100,9 +89,15 @@ namespace rbtree
         Node() = default;
         Node(const T& value, long int uid)
         {
+            init(value, uid);
+        }
+
+        void init(const T& value, long int uid)
+        {
             value_ = value;
             uid_ = uid;
         }
+
         T& value() {
             return value_;
         }
@@ -137,12 +132,12 @@ namespace rbtree
         long int uid() const {
             return std::abs(uid_);
         }        
-        bool isRed() {
+        bool isRed() const {
             bool is_red = (uid_ >= 0);
             return is_red;
         }
 
-        bool isLeft() {
+        bool isLeft() const {
             bool is_left{false};
             if(parent_)
             {
@@ -165,28 +160,46 @@ namespace rbtree
             return is_leaf;
         }
 
-        std::string toString()
+        core::Json toJson() const
         {
-            core::Json json = *this;
-            std::string out = json.dump(2);
-            return out;
+            core::Json json;
+            json["value"] = value_;
+            json["uid"] = uid();
+            json["is_red"] = isRed(); 
+
+            if(parent())
+                json["parent"] = parent()->uid();
+            else  
+                json["parent"] = NIL_UID;
+
+            if(left())
+                json["left"] = left()->uid();
+            else 
+                json["left"] = NIL_UID;
+                
+            if(right())
+                json["right"] = right()->uid();
+            else 
+                json["right"] = NIL_UID;
+            
+            return json;
+        }
+
+        void fromJson(const core::Json& json)
+        {
+            value_ = json["value"].get<T>();
+            bool is_red = json["is_red"];
+            uid_ = is_red ? json["uid"].get<long int>() : -json["uid"].get<long int>();
         }
     };
+    //..............................................................................................
 
-    template <class T> 
-    void to_json(core::Json& json, const Node<T>& node) {
-        json["value"] = node.value();
-        json["uid"] = node.uid();
-
-        if(node.parent())
-            json["parent"] = node.parent()->uid();
-
-        if(node.left())
-            json["left"] = node.left()->uid();
-            
-        if(node.right())
-            json["right"] = node.right()->uid();
-
+    template <typename T>
+    std::string format_as(Node<T> node)
+    {
+        core::Json json = node.toJson();
+        std::string json_str = json.dump(4);
+        return json_str;
     }
 
     /**
@@ -313,6 +326,15 @@ namespace rbtree
         setRight(y, x);
     }
 
+    // template <typename T> 
+    // auto format_as(Node<T>& node)
+    // {
+    //     core::Json json = node.toJson();
+    //     std::string json_str = json.dump(4);
+    //     return json_str;
+    // }
+
+
     // .................................................................................class RBTree
     template <class T>
     class Tree
@@ -327,7 +349,7 @@ namespace rbtree
 
         public:
 
-        // {{{ class: Iterator
+        
         /**
         @brief The iterator associated with this container
         
@@ -346,7 +368,14 @@ namespace rbtree
             using pointer = T*;
             using reference = T&;
 
+            Iterator() = default;
+
             Iterator(Node<T>* node)
+            {
+                node_ = node;
+            }
+
+            void init(Node<T> *node)
             {
                 node_ = node;
             }
@@ -408,21 +437,153 @@ namespace rbtree
 
 
         };
-        // }}}
+        
 
         Tree() = default;
-        std::pair<Iterator, bool> insert(const T& value)
-        {
 
+         std::pair<bool, Iterator> insert(const T& value)
+        {
+            std::pair<bool, Iterator> out;
+            out.first = false;
+
+            NodeSptr<T> y;
+            NodeSptr<T> x = root_;
+
+            while (x)
+            {
+                if(x->value_ == value)
+                {
+                    out.second.init(x.get());
+                    return out;
+                }
+                y = x;
+                if (value < x->value_)
+                {
+                    x = x->left_;
+                }
+                else {
+                    x = x->right_;
+                }
+            }
+
+            if (!y) 
+            {
+                root_ = newNode(value);
+                out.first = true;
+                out.second.init( root_.get());
+            }
+            else if (value < y->value()) 
+            {
+                y->left() = newNode(value);
+                out.first = true;
+                out.second.init(y->left().get());
+            }
+            else 
+            {
+                y->right() = newNode(value);
+                out.first = true;
+                out.second.init(y->right().get());
+            }
+            return out;
         }
+
         Iterator erase(const T& value);
         Iterator erase(Iterator iter);        
 
+        core::Json toJson() 
+        {
+            core::Json json; 
+            json["root"] = root_->uid();
+
+            std::stack<NodeSptr<T>> next_nodes;
+            next_nodes.push(root_);
+            
+            while (!next_nodes.empty())
+            {
+                NodeSptr<T> cur = next_nodes.top(); 
+                next_nodes.pop();
+
+                auto uid_str = std::to_string(cur->uid());
+                json[uid_str] = cur->toJson();
+
+                if(cur->left())
+                    next_nodes.push(cur->left());
+
+                if(cur->right()) 
+                    next_nodes.push(cur->right());
+
+            }
+            return json;
+        }
+
+        void fromJson(const core::Json& json)
+        {
+            std::string root_uid = std::to_string(json["root"].get<long int>());
+            root_ = newNode(json[root_uid]);
+            
+            std::stack<std::string> next_nodes;
+            next_nodes.push(root_uid);
+
+            while (!next_nodes.empty())
+            {
+                std::string cur_uid  = next_nodes.top();
+                next_nodes.pop();
+
+                std::string left_uid = std::to_string(json[cur_uid]["left"].get<long int>());
+                std::string right_uid = std::to_string(json[cur_uid]["right"].get<long int>());
+
+                auto new_node = newNode(json[cur_uid]);
+                auto left_node = newNode(json[left_uid]);
+                auto right_node = newNode(json[right_uid]);
 
 
+                new_node->left() = left_node;
+                left_node->parent() = new_node;
+                new_node->right() = right_node;
+                right_node->parent() = new_node;
+
+            }
+
+        }
+
+
+
+        private: 
+
+        void insertFixup()
+        {
+
+        }
+
+        NodeSptr<T> newNode(const T& value)
+        {
+            NodeSptr<T> new_node = std::make_shared<Node<T>>(value, next_uid_);
+            ++next_uid_;
+            return new_node;
+        }
+
+        NodeSptr<T> newNode(const core::Json& json)
+        {
+            NodeSptr<T> new_node = std::make_shared<Node<T>>();
+            new_node->fromJson(json);
+            return new_node;
+        }
         
     };
-    // }}}
+    //..............................................................................................
+
+
+    template <typename T>
+    std::string format_as(Tree<T> node)
+    {
+        core::Json json = node.toJson();
+        std::string json_str = json.dump(4);
+        return json_str;
+    }
+
+
+
+    
 }
 }
 

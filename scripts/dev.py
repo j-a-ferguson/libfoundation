@@ -6,9 +6,9 @@ import argparse as ap
 libfoundation_root = os.getcwd()
 
 
-def clean():
+def clean(build_type: str):
 
-    build_dir = os.path.join(libfoundation_root, 'build')
+    build_dir = os.path.join(libfoundation_root, 'build', build_type.lower())
     if os.path.isdir(build_dir):
         print('>> deleting %s' % build_dir)
         shutil.rmtree(build_dir)
@@ -111,6 +111,7 @@ def main():
 
     # clean parser
     clean_parser = subparsers.add_parser('clean', help='cleans the build directories')    
+    clean_parser.add_argument('build_type', choices=['Release', 'Debug', 'All'], help='build type to compile')    
     # compile parser
     compiler_parse = subparsers.add_parser('compile', help = 'compiles the library')
     compiler_parse.add_argument('build_type', choices=['Release', 'Debug', 'All'], help='build type to compile')    
@@ -126,7 +127,7 @@ def main():
 
     args = parser.parse_args()
     if(args.cmd == 'clean'):
-        clean()
+        clean(args.build_type)
     elif(args.cmd == 'compile'):
         compile(args.build_type)
     elif(args.cmd == 'run_test'):
