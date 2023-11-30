@@ -466,24 +466,31 @@ namespace rbtree
                 }
             }
 
+            NodeSptr<T> new_node;
             if (!y) 
             {
                 root_ = newNode(value);
                 out.first = true;
                 out.second.init( root_.get());
+                new_node = root_;
             }
             else if (value < y->value()) 
             {
                 y->left() = newNode(value);
                 out.first = true;
                 out.second.init(y->left().get());
+                new_node = y->left();
             }
             else 
             {
                 y->right() = newNode(value);
                 out.first = true;
                 out.second.init(y->right().get());
+                new_node = y->right();
             }
+
+            insertFixup(new_node);
+
             return out;
         }
 
@@ -550,9 +557,15 @@ namespace rbtree
 
         private: 
 
-        void insertFixup()
+        void insertFixup(NodeSptr<T> node)
         {
-
+            while(node->parent()->isRed())
+            {
+                if(node->parent()->isLeft())
+                {
+                    auto y = node->parent()->parent()->
+                }
+            }    
         }
 
         NodeSptr<T> newNode(const T& value)
