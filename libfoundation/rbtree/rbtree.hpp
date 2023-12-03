@@ -1,523 +1,209 @@
-// ------------------------------------------------------
-//  John Alexander Ferguson, 2023
-//  Distributed under CC0 1.0 Universal licence
-// ------------------------------------------------------
+
+
 
 #include <cstddef>
 #include <memory>
-#include <utility>
-#include <iterator>
-#include <cmath>
-#include <string>
-#include <limits>
 #include <stack>
-
-#include <fmt/core.h>
+#include <string>
 
 #include <libfoundation/core/io.hpp>
 #include <libfoundation/core/assertions.hpp>
 
-
-namespace foundation
-{
-namespace rbtree
-{
-
-    // ....................................................................... forwared declarations
-    static const long int NIL_UID = std::numeric_limits<long int>::max();
-
-    template <class T>
-    class Node;
-
-    /**
-    @brief Shared pointer type for RBNode 
-    
-    @tparam T data type stored within RBNode
-     */
-    template <class T> 
-    using NodeSptr = std::shared_ptr<Node<T>>;  
-
-    template <class T>
-    void setLeft(NodeSptr<T> root, NodeSptr<T> new_left);
-
-    template <class T>
-    void setRight(NodeSptr<T> root, NodeSptr<T> new_left);
+namespace foundation {
+namespace rbree {
 
 
-    template <class T> 
-    class Tree;
-    // ..............................................................................  class Node
-    /**
-    @brief Node class of the red-black tree.
-    
-    @tparam T Underlying type this node is storing.
+    static const long int NIL_UID = 0;
 
-    Some notes on the design: The ``left_`` and ``right_`` pointers are 
-    owning pointers. This is because these nodes form part of a
-    red-black tree where nodes are added dynamically and will be 
-    assigned to the children of existing nodes.
-    
-    The ``parent_`` pointer is not an owning pointer. 
+    //--------------------------------------------------------------------------------------------//
+    //                                       struct Node                                          //
+    //--------------------------------------------------------------------------------------------//
+    template <typename T>
+    struct Node;
 
-     */
-    template <class T>
-    class Node
+    template <typename T>
+    using Snode = std::shared_ptr<Node<T>>;
+
+    template <typename T>
+    struct Node 
     {
-        // ...................................... friends
-        friend class Tree<T>;
-        friend void setLeft<T>(NodeSptr<T> root, NodeSptr<T> new_left);
-        friend void setRight<T>(NodeSptr<T> root, NodeSptr<T> new_left);
 
-        // ...................................... private members 
-        private:
-        
-        /** Value this node stores*/
-        T value_{};
-        /** Sign bit is the color, positive = red and negative = black. Remaining bits are the uid*/
-        long int uid_{0};        
-        /** Pointer to the parent */
-        NodeSptr<T> parent_;
-        /** Pointer to the left child */
-        NodeSptr<T> left_;
-        /** Pointer to thr right child */
-        NodeSptr<T> right_;
-
-        //....................................... public methods
-        public:
-
+        T data_{};
+        long int uid_{NIL_UID};
+        Snode<T> p_;
+        Snode<T> l_;
+        Snode<T> r_;
 
         Node() = default;
         Node(const T& value, long int uid)
         {
             init(value, uid);
         }
-
         void init(const T& value, long int uid)
         {
-            value_ = value;
-            uid_ = uid;
+            data_ = value;
+            uid_ = uid;    
         }
 
-        T& value() {
-            return value_;
-        }
-        const T& value() const {
-            return value_;
+        static Snode<T> newFromData(const T& data, long int uid)
+        {
+            return std::make_shared<Node<T>>(data, uid);
         }
 
-        NodeSptr<T>& parent() {
-            return parent_;
+        static Snode<T> newFromJson(const core::Json& json)
+        {
+            auto out = std::make_shared<Node<T>>();
+            out->fromJson(json);
+            return out;
         }
 
-        const NodeSptr<T>& parent() const {
-            return parent_;
+        bool isRed() const 
+        {
+            return uid_ >= 0;
         }
 
-        NodeSptr<T>& left() {
-            return left_;
+        void flip()
+        {
+            uid_ = -uid_;
         }
 
-        const NodeSptr<T>& left() const {
-            return left_;
-        }
-
-        NodeSptr<T>& right() {
-            return right_;            
-        }
-
-        const NodeSptr<T>& right() const {
-            return right_;
-        }
-
-        long int uid() const {
-            return std::abs(uid_);
-        }        
-        bool isRed() const {
-            bool is_red = (uid_ >= 0);
-            return is_red;
-        }
-
-        bool isLeft() const {
+        bool isLeft() const 
+        {
             bool is_left{false};
-            if(parent_)
+            if(p_) 
             {
-                is_left = parent_->left_.get() == this;
+                is_left = this == p_->l_.get();
             }
             return is_left;
         }
 
-        bool isRight() {
+
+        bool isRight() const 
+        {
             bool is_right{false};
-            if(parent_) 
+            if(p_) 
             {
-                is_right = parent_->right_.get() == this;
+                is_right = this == p_->r_.get();
             }
             return is_right;
         }
 
-        bool isLeaf() {
-            bool is_leaf{(!left_) && (!right_)};
+        bool isLeaf() const 
+        {
+            bool is_leaf = !l_ && !r_;
             return is_leaf;
         }
 
-        core::Json toJson() const
+        bool isNil() const 
+        {
+            return uid_ == NIL_UID;
+        }
+
+        core::Json toJson() const 
         {
             core::Json json;
-            json["value"] = value_;
-            json["uid"] = uid();
-            json["is_red"] = isRed(); 
-
-            if(parent())
-                json["parent"] = parent()->uid();
-            else  
-                json["parent"] = NIL_UID;
-
-            if(left())
-                json["left"] = left()->uid();
-            else 
-                json["left"] = NIL_UID;
-                
-            if(right())
-                json["right"] = right()->uid();
-            else 
-                json["right"] = NIL_UID;
-            
+            json["data"] = data_;
+            json["uid"] = uid_;
+            json["p"] = p_ ? std::abs(p_->uid_) : NIL_UID;
+            json["l"] = l_ ? std::abs(l_->uid_) : NIL_UID;
+            json["r"] = r_ ? std::abs(r_->uid_) : NIL_UID;
             return json;
         }
 
-        void fromJson(const core::Json& json)
+        void fromJson(const core::Json& json) 
         {
-            value_ = json["value"].get<T>();
-            bool is_red = json["is_red"];
-            uid_ = is_red ? json["uid"].get<long int>() : -json["uid"].get<long int>();
+            data_ = json["data"];
+            uid_ = json["uid"];
         }
     };
-    //..............................................................................................
 
-    template <typename T>
-    std::string format_as(Node<T> node)
+    template <typename T> 
+    std::string format_as(Node<T> node) 
     {
         core::Json json = node.toJson();
-        std::string json_str = json.dump(4);
+        auto json_str = json.dump(4);
         return json_str;
     }
 
-    /**
-    @brief Sets the left child of a given node.
-    
-    @tparam T Underlying type stored in node
-    @param node Node who's left child will be edited
-    @param new_left Node to be assigned as left child.
 
-    Notes on 
-     */
-    template <class T>
-    void setLeft(NodeSptr<T> root, NodeSptr<T> new_left)
-    {        
-        ERR_ASSERT_THROW_INVARG_m(root, "root is nullptr");        
-        ERR_ASSERT_THROW_INVARG_m(new_left, "new_left is nullptr");        
-        // set parent of old left to null
-        auto old_left = root->left_;
-        if(old_left) old_left->parent_ = nullptr;
-        // set old parent left or right to null
-        auto old_parent = new_left->parent_;
-        if(old_parent)
-        {
-            if(new_left->isLeft()) // if new left is left child 
-                old_parent->left_ = nullptr;
-            else if(new_left->isRight()) // if new left is right child
-                old_parent->right_ = nullptr;
-        } 
-
-        root->left_ = new_left;
-        new_left->parent_ = root;
-    }
-
-    template <class T> 
-    void setRight(NodeSptr<T> root, NodeSptr<T> new_right)
+    //--------------------------------------------------------------------------------------------//
+    //                                       class RBtree                                         //
+    //--------------------------------------------------------------------------------------------//
+    template <typename T, typename Compare = std::less<T>> 
+    class RBtree
     {
-        ERR_ASSERT_THROW_INVARG_m(root, "root is nullptr");        
-        ERR_ASSERT_THROW_INVARG_m(new_right, "new_left is nullptr");        
-        // set parent of old left to null
-        auto old_right = root->right_;
-        if(old_right) old_right->parent_ = nullptr;
-        // set old parent left or right to null
-        auto old_parent = new_right->parent_;
-        if(old_parent)
-        {
-            if(new_right->isLeft()) // if new left is left child 
-                old_parent->left_ = nullptr;
-            else if(new_right->isRight()) // if new left is right child
-                old_parent->right_ = nullptr;
-        } 
-
-        root->right_ = new_right;
-        new_right->parent_ = root;
-    }
-
-    /**
-    @brief 
-    
-    @tparam T Underlying type stored by the RB-tree
-    @param[in] x node on which to perform 
-    @param[in] y     
-    @return void
-     */
-    template <class T>
-    void leftRotate(NodeSptr<T>& x, NodeSptr<T>& y)
-    {
-        ERR_ASSERT_THROW_INVARG_m(x, "x is nullptr");
-        ERR_ASSERT_THROW_INVARG_m(y, "y is nullptr");
-        ERR_ASSERT_THROW_INVARG_m(x->right() == y, "y is not right subtree of x");
-
-        // set right subtree of x to left subtree of y
-        if(y->left())
-            setRight(x, y->left());
-        else 
-            x->right() = nullptr;
-
-        if(x->parent())
-        {
-            // if x is not root then set y to be child of x->parent()
-            if(x->isLeft())
-                setLeft(x->parent(), y);
-            else if(x->isRight())
-                setRight(x->parent(), y);
-        }
-        else
-        {
-            y->parent() = nullptr;
-        }
-
-        // finally set x to be the left subchild of y
-        setLeft(y, x);        
-    }
-
-
-    template <class T> 
-    void rightRotate(NodeSptr<T>& x, NodeSptr<T>& y)
-    {
-        ERR_ASSERT_THROW_INVARG_m(x, "x is nullptr");
-        ERR_ASSERT_THROW_INVARG_m(y, "y is nullptr");
-        ERR_ASSERT_THROW_INVARG_m(x->left() == y, "y is not left subtree of x");
-
-
-        // set the left subtree of x to be the right subtree of y
-        if(y->right())
-            setLeft(x, y->right());
-        else 
-            x->left() = nullptr;
-        
-        if(x->parent())
-        {
-            // if x is not root then set y to be child of x->parent()
-            if(x->isLeft())
-                setLeft(x->parent(), y);
-            else if(x->isRight())
-                setRight(x->parent(), y);
-        }
-        else 
-        {
-            // if x is root then set y to be root
-            y->parent() = nullptr;
-        }
-
-        // finally set x to be the right child of y 
-        setRight(y, x);
-    }
-
-    // template <typename T> 
-    // auto format_as(Node<T>& node)
-    // {
-    //     core::Json json = node.toJson();
-    //     std::string json_str = json.dump(4);
-    //     return json_str;
-    // }
-
-
-    // .................................................................................class RBTree
-    template <class T>
-    class Tree
-    {
-        friend class Node<T>;
-
         private: 
 
+        Snode<T> root_;
+        const Snode<T> nil_node_{std::make_shared<Node<T>>(0.0, NIL_UID)};
+        Compare cmp_;
         std::size_t size_{0};
-        NodeSptr<T> root_;
-        long int next_uid_{0};
 
-        public:
+        public: 
 
-        
-        /**
-        @brief The iterator associated with this container
-        
-         */
-        class Iterator
+
+
+        RBtree() = default;
+
+        RBtree(Compare cmp)
         {
-            private:
-
-            Node<T>* node_;
-
-            public:
-
-            using iterator_category = std::forward_iterator_tag;
-            using difference_type = std::ptrdiff_t;
-            using value_type = T;
-            using pointer = T*;
-            using reference = T&;
-
-            Iterator() = default;
-
-            Iterator(Node<T>* node)
-            {
-                node_ = node;
-            }
-
-            void init(Node<T> *node)
-            {
-                node_ = node;
-            }
-
-            Iterator(const Iterator& iter)
-            {
-                node_ = iter.node_;                
-            }
-
-            Iterator& operator=(const Iterator& iter) 
-            {
-                if(this != &iter)
-                {
-                    node_ = iter.node_;
-                }
-                return *this;
-            }
-
-            Iterator(Iterator&& iter)
-            {
-
-            }
-
-            Iterator& operator=(Iterator&& iter)
-            {
-
-            }
-
-            reference operator*() 
-            {
-                return node_->value();
-            }
-
-            pointer operator->()
-            {
-                return &(node_->value());
-            }
-
-            Iterator& operator++() 
-            {
-
-            }
-
-            Iterator& operator++(int)
-            {
-
-            }
-
-            friend bool operator==(const Iterator& iter1, const Iterator& iter2)
-            {
-
-            }
-
-
-            friend bool operator!=(const Iterator& iter1, const Iterator& iter2)
-            {
-
-            }
-
-
-        };
-        
-
-        Tree() = default;
-
-         std::pair<bool, Iterator> insert(const T& value)
-        {
-            std::pair<bool, Iterator> out;
-            out.first = false;
-
-            NodeSptr<T> y;
-            NodeSptr<T> x = root_;
-
-            while (x)
-            {
-                if(x->value_ == value)
-                {
-                    out.second.init(x.get());
-                    return out;
-                }
-                y = x;
-                if (value < x->value_)
-                {
-                    x = x->left_;
-                }
-                else {
-                    x = x->right_;
-                }
-            }
-
-            NodeSptr<T> new_node;
-            if (!y) 
-            {
-                root_ = newNode(value);
-                out.first = true;
-                out.second.init( root_.get());
-                new_node = root_;
-            }
-            else if (value < y->value()) 
-            {
-                y->left() = newNode(value);
-                out.first = true;
-                out.second.init(y->left().get());
-                new_node = y->left();
-            }
-            else 
-            {
-                y->right() = newNode(value);
-                out.first = true;
-                out.second.init(y->right().get());
-                new_node = y->right();
-            }
-
-            insertFixup(new_node);
-
-            return out;
+            cmp_ = cmp;
         }
 
-        Iterator erase(const T& value);
-        Iterator erase(Iterator iter);        
+        Snode<T>& root() {return root_;};
+        const Snode<T>& root() const {return root_;};
 
-        core::Json toJson() 
+        const Compare& cmp() const {return cmp_;};
+
+        Snode<T>& search(const T& value)
         {
-            core::Json json; 
-            json["root"] = root_->uid();
-
-            std::stack<NodeSptr<T>> next_nodes;
-            next_nodes.push(root_);
-            
-            while (!next_nodes.empty())
+            Compare cmp;
+            Snode<T> cur = root_;
+            Snode<T> prev = nullptr;
+            while (cur)
             {
-                NodeSptr<T> cur = next_nodes.top(); 
-                next_nodes.pop();
+                prev = cur;
+                if (cmp_(value, cur->data_))
+                {
+                    cur = cur->l_;
+                }
+                else if(cmp_(cur->data_, value)) 
+                {
+                    cur = cur->r_;
+                }
+                else 
+                {
+                    return cur;
+                }
+            }
+            return nil_node_;
+        }
 
-                auto uid_str = std::to_string(cur->uid());
-                json[uid_str] = cur->toJson();
 
-                if(cur->left())
-                    next_nodes.push(cur->left());
+        core::Json toJson() const 
+        {
+            core::Json json;
 
-                if(cur->right()) 
-                    next_nodes.push(cur->right());
+            json["size"] = size_;
+            json["root"] = std::abs(root_->uid_);
+
+            std::stack<Snode<T>> node_stack;
+            node_stack.push(root_);
+
+            while(!node_stack.empty())
+            {
+                auto cur = node_stack.top();
+                node_stack.pop();
+
+                auto cur_uid_str = core::format("{}", std::abs(cur->uid_));
+
+                json[cur_uid_str] = cur->toJson();
+
+                if(cur->l_)
+                    node_stack.push(cur->l_);
+
+                if(cur->r_)
+                    node_stack.push(cur->r_);
 
             }
             return json;
@@ -525,78 +211,97 @@ namespace rbtree
 
         void fromJson(const core::Json& json)
         {
-            std::string root_uid = std::to_string(json["root"].get<long int>());
-            root_ = newNode(json[root_uid]);
-            
-            std::stack<std::string> next_nodes;
-            next_nodes.push(root_uid);
+            std::size_t size = json["size"].get<std::size_t>();
+            size_ = size;
 
-            while (!next_nodes.empty())
+            long int root_uid = json["root"];
+
+
+            std::stack<long int> node_ids;
+            node_ids.push(root_uid);
+
+            while(!node_ids.empty())
             {
-                std::string cur_uid  = next_nodes.top();
-                next_nodes.pop();
+                long int cur_uid = node_ids.top();
+                auto cur_uid_str = core::format("{}", cur_uid);
+                node_ids.pop();
 
-                std::string left_uid = std::to_string(json[cur_uid]["left"].get<long int>());
-                std::string right_uid = std::to_string(json[cur_uid]["right"].get<long int>());
+                core::Json cur_json = json[cur_uid_str];
+                auto cur = Node<T>::newFromJson(cur_json);
 
-                auto new_node = newNode(json[cur_uid]);
-                auto left_node = newNode(json[left_uid]);
-                auto right_node = newNode(json[right_uid]);
+                if(!root_) root_ = cur;
+
+                long int l_uid = cur_json["l"];
+                if (l_uid != NIL_UID)
+                {
+
+                    auto l_uid_str = core::format("{}", l_uid);
+                    core::Json l_json = json[l_uid_str];
+                    auto l = Node<T>::newFromJson(l_json);
+                    cur->l_ = l;
+                    l->p_ = cur;
+                    node_ids.push(std::abs(l_uid));
+                }
 
 
-                new_node->left() = left_node;
-                left_node->parent() = new_node;
-                new_node->right() = right_node;
-                right_node->parent() = new_node;
+                long int r_uid = cur_json["r"];
+                if (r_uid != NIL_UID)
+                {
+
+                    auto r_uid_str = core::format("{}", r_uid);
+                    core::Json r_json = json[r_uid_str];
+                    auto r = Node<T>::newFromJson(r_json);
+                    cur->r_ = r;
+                    r->p_ = cur;
+                    node_ids.push(std::abs(r_uid));
+                }
 
             }
 
+
         }
 
 
-
-        private: 
-
-        void insertFixup(NodeSptr<T> node)
-        {
-            while(node->parent()->isRed())
-            {
-                if(node->parent()->isLeft())
-                {
-                    auto y = node->parent()->parent()->
-                }
-            }    
-        }
-
-        NodeSptr<T> newNode(const T& value)
-        {
-            NodeSptr<T> new_node = std::make_shared<Node<T>>(value, next_uid_);
-            ++next_uid_;
-            return new_node;
-        }
-
-        NodeSptr<T> newNode(const core::Json& json)
-        {
-            NodeSptr<T> new_node = std::make_shared<Node<T>>();
-            new_node->fromJson(json);
-            return new_node;
-        }
-        
     };
-    //..............................................................................................
 
-
-    template <typename T>
-    std::string format_as(Tree<T> node)
+    template <typename T> 
+    std::string format_as(RBtree<T> tree) 
     {
-        core::Json json = node.toJson();
-        std::string json_str = json.dump(4);
+        core::Json json = tree.toJson();
+        auto json_str = json.dump(4);
         return json_str;
     }
 
+    template <typename T> 
+    void leftRotate(RBtree<T>& tree, Snode<T>& x)
+    {
+        if(x->r_)
+        {
+            // extract right subtree
+            auto y = x->r_;
+            // turn y's left tree into x's right tree
+            x->r_ = y->l_;
+            if (y->l_)
+                y->l_->p_ = x;
+            // link x's parent to y
+            y->p_->x->parent;
+            if (x->isRoot())
+                tree->root() = y;
+            else if(x->isLeft())
+                x->p_->l_ = y;
+            else 
+                x->p_->r_ = y;
+            // make x left subtree of y
+            y->l_ = x;
+            x.p_ = y;
+        }
+    }
 
 
-    
+    template <typename T> 
+    void rightRotate(RBtree<T>& tree, Snode<T>& node)
+    {
+
+    }
 }
 }
-
