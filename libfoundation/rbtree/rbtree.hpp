@@ -99,6 +99,11 @@ namespace rbree {
             return uid_ == NIL_UID;
         }
 
+        bool isRoot() const 
+        {
+            return !bool(p_);
+        }
+
         core::Json toJson() const 
         {
             core::Json json;
@@ -273,7 +278,7 @@ namespace rbree {
     }
 
     template <typename T> 
-    void leftRotate(RBtree<T>& tree, Snode<T>& x)
+    void leftRotate(RBtree<T>& tree, Snode<T> x)
     {
         if(x->r_)
         {
@@ -284,16 +289,16 @@ namespace rbree {
             if (y->l_)
                 y->l_->p_ = x;
             // link x's parent to y
-            y->p_->x->parent;
+            y->p_ = x->p_;
             if (x->isRoot())
-                tree->root() = y;
+                tree.root() = y;
             else if(x->isLeft())
                 x->p_->l_ = y;
             else 
                 x->p_->r_ = y;
             // make x left subtree of y
             y->l_ = x;
-            x.p_ = y;
+            x->p_ = y;
         }
     }
 

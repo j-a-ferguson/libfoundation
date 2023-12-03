@@ -99,5 +99,21 @@ TEST(TreeTests, equal) {
 }
 
 
+TEST(TreeTests, leftRotate)
+{
+
+    core::Json json1 = core::loadJson("assets/rbtree/tree2-left.json");
+    core::Json json2 = core::loadJson("assets/rbtree/tree2-right.json");
+    RBtree<double> tree1, tree2;
+    tree1.fromJson(json1);
+    tree2.fromJson(json2);
+
+    leftRotate(tree1, tree1.root());
+    core::print("{}\n", tree1);
+    core::print("{}\n", tree2);
+    ASSERT_TRUE(equal(tree1, tree2));
+}
+
+
 }
 }
